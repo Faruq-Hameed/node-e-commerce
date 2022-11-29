@@ -1,9 +1,7 @@
 const express = require('express')
 const morgan = require('morgan');
-// const routes = require('./routes')
-const {userRouter, productRouter} = require('./routes')
-// const productRouter = require('./routes/products')
-// const productRouter = require('./routes')
+const {userRouter, productRouter, orderRouter} = require('./routes')
+
 require('dotenv').config({path: './.env'})
 
 const port = process.env.PORT || 3000
@@ -16,6 +14,7 @@ app.use(morgan(":method :url :status :res[content-length] - :response-time ms - 
 
 app.use('/users', userRouter)
 app.use('/products', productRouter)
+app.use('/orders', orderRouter)
 app.get('/', (req, res)=>{
 
     res.status(200).send("<h1>Hello world</h1>")

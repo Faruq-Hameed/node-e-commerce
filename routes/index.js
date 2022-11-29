@@ -1,7 +1,7 @@
 // const express = require('express')
 const userRouter = require('./users')
 const productRouter = require('./products')
-
-module.exports = {userRouter, productRouter}
+const orderRouter = require('./order')
+module.exports = {userRouter, productRouter, orderRouter}
 
 

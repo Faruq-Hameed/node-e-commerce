@@ -80,20 +80,38 @@ const products = [
     
 ]
 
+const allUsersOrders = [
+    {
+        userId: 'u1',
+        userOrders: [{
+            orderId: 'u1Or1',
+            productId: 'p1',
+            totalQty: 5,
+            orderValue: 50
+        },
+        {
+            orderId: 'u1Or2',
+            productId: 'p1',
+            totalQty: 10,
+            orderValue: 100
+        },]
+    },
 
-module.exports = {products, users}
+    {
+        userId: 'u2',
+        userOrders: [{
+            orderId: 'u2Or1',
+            productId: 'p1',
+            totalQty: 6,
+            orderValue: 60
+        }]
+    },
+    {
+        userId: 'u3',
+        userOrders: []
+    }
 
-// const currentOrders = [
-//     {
-//         userId:001,
-//         userOrders: {
-//             order1:{
-//                 productId: 'p1',
-//                 totalQty,
-//                 qtyValue:k
-//             }
+]
 
-           
-//         }   
-//     }
-// ]
+module.exports = {products, users, allUsersOrders}
+

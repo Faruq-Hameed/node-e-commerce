@@ -21,7 +21,7 @@ const users = [{
 
 },
 {
-    userId:'u1',
+    userId:'u3',
     name: 'faruq',
     email: 'faruq@example.com',
     userName: 'faruq01',
@@ -86,13 +86,13 @@ const allUsersOrders = [
         userOrders: [{
             orderId: 'u1Or1',
             productId: 'p1',
-            totalQty: 5,
+            orderQty: 5,
             orderValue: 50
         },
         {
             orderId: 'u1Or2',
             productId: 'p1',
-            totalQty: 10,
+            orderQty: 10,
             orderValue: 100
         },]
     },
@@ -102,7 +102,7 @@ const allUsersOrders = [
         userOrders: [{
             orderId: 'u2Or1',
             productId: 'p1',
-            totalQty: 6,
+            orderQty: 6,
             orderValue: 60
         }]
     },

@@ -57,40 +57,51 @@ orderRouter.post('/',(req, res)=>{
 
 })
 
-orderRouter.patch('/:userId/:orderId', (req, res) => {
-    const userCart = allUsersOrders.find(user => user.userId === req.params.userId)
-    const orderToUpdate = userCart.userOrders.find(order => order.orderId === req.params.orderId)
-    const product = products.find(product => product.productId === orderToUpdate.productId)
-    if (!userCart) {
-        res.status(404).send('unauthorized'); return       
+orderRouter.put('/:userId/:orderId', (req, res) => {
+    // getting the user entire cart detail from all users carts in store(database)
+    const currentUserOrder = allUsersOrders.find(user => user.userId === req.params.userId)
+    if (!currentUserOrder) {
+        res.status(404).send('unauthorized user'); return       
     }
-    if (!orderToUpdate && !product) { 
-        res.status(404).send('unknown orderId'); return 
-    }
-    if(orderToUpdate.orderQty > parseInt(req.body.quantity)){
-        // updating the product quantity in the store i.e database
-        product.productQty = product.productQty + (orderToUpdate.orderQty - parseInt(req.body.quantity)) 
-        product.soldQty = product.soldQty  - (orderToUpdate.orderQty - parseInt(req.body.quantity))
+    if (currentUserOrder){
+        //getting the user cart items to see if the order exist in his userOrders(cart)
+        const orderToUpdate = currentUserOrder.userOrders.find(order => order.orderId === req.params.orderId)
+        if (orderToUpdate) {
+            const product = products.find(product => product.productId === orderToUpdate.productId)
+                if(orderToUpdate.orderQty > parseInt(req.body.quantity)){
+                    // updating the product quantity in the store i.e database
+                    product.productQty = product.productQty + (orderToUpdate.orderQty - parseInt(req.body.quantity)) 
+                    product.soldQty = product.soldQty  - (orderToUpdate.orderQty - parseInt(req.body.quantity))
+            
+                    orderToUpdate.orderQty = parseInt(req.body.quantity) // updating the user cart with the reduced quantity
+                    res.status(200).end('order successfully updated with the new quantity')
+                
+                }
+            else if (orderToUpdate.orderQty < parseInt(req.body.quantity)
+                && product.productQty >= parseInt(req.body.quantity)) {
+                // updating the product quantity in the store i.e database
+                product.productQty = product.productQty - (parseInt(req.body.quantity) - orderToUpdate.orderQty)
+                product.soldQty = product.soldQty + (parseInt(req.body.quantity) - orderToUpdate.orderQty)
 
-        orderToUpdate.orderQty = parseInt(req.body.quantity) // updating the user cart with the reduced quantity
-    }
-    else if(orderToUpdate.orderQty < parseInt(req.body.quantity)){
-        // updating the product quantity in the store i.e database
-        product.productQty = product.productQty - (parseInt(req.body.quantity) - orderToUpdate.orderQty )
-        product.soldQty = product.soldQty  + (parseInt(req.body.quantity) - orderToUpdate.orderQty )
+                orderToUpdate.orderQty = parseInt(req.body.quantity) // updating the user cart with the increased quantity
+                res.status(200).end('order successfully updated with the new quantity')
 
-        orderToUpdate.orderQty = parseInt(req.body.quantity) // updating the user cart with the increased quantity
-    }
-    res.status(200).end('order successfully updated new quantity')
+            }
+            else res.status(404).send(`your new quantity is not available kindly buy less than ${parseInt(req.body.quantity)}`)
+
+        }
+        else res.status(404).send('no valid order found')
+       }
+  
 })
 
 
 orderRouter.delete('/:userId/:orderId', (req, res) => {
-    const userCart = allUsersOrders.find(user => user.userId === req.params.userId)
-    const orderToDelete = userCart.userOrders.find(order => order.orderId === req.params.orderId)
-    const orderIndex = userCart.userOrders.findIndex(order => order.orderId === req.params.orderId)
+    const currentUserOrder = allUsersOrders.find(user => user.userId === req.params.userId)
+    const orderToDelete = currentUserOrder.userOrders.find(order => order.orderId === req.params.orderId)
+    const orderIndex = currentUserOrder.userOrders.findIndex(order => order.orderId === req.params.orderId)
     const product = products.find(product => product.productId === orderToUpdate.productId)
-    if (!userCart) {
+    if (!currentUserOrder) {
         res.status(404).send('unauthorized'); return
     }
     if (!orderToUpdate && !product) {
@@ -100,7 +111,7 @@ orderRouter.delete('/:userId/:orderId', (req, res) => {
     // updating the product quantity in the store i.e database
     product.productQty = product.productQty + orderToDelete.orderQty // returning the quantity back to the store(database)
     product.soldQty = product.soldQty - orderToDelete.orderQty // subtracting from the quantity outside the store
-    userCart.userOrders.splice(orderIndex, 1) // deleting the order from the user cart
+    currentUserOrder.userOrders.splice(orderIndex, 1) // deleting the order from the user cart
     res.status(200).send('order successfully deleted');
 })
 module.exports = orderRouter;

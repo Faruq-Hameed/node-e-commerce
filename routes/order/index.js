@@ -20,8 +20,7 @@ orderRouter.get('/:userId', (req, res) => {
             let i = 0
             userOrder.userOrders
                 .map(function (order) {
-                    orderSummary += `${++i}). orderId: ${order.orderId} ; productId ${order.productId} ; quantity: ${order.orderQty}kg;
-        with value: $${order.orderValue} `
+                    orderSummary += `\n ${++i}). orderId: ${order.orderId} ; productId ${order.productId} ; quantity: ${order.orderQty}kg;with value: $${order.orderValue} `
                 })
             res.status(200).send(orderSummary)
         }
@@ -42,7 +41,7 @@ orderRouter.get('/:userId/:orderId', (req, res) => {
     if (req.params.userId === 'u1' || getOrderInfo.userId === req.params.userId) { // an admin user can access any order with the id
         const orderToGet = getOrderInfo.userOrders.find(order => order.orderId === req.params.orderId)
         const product = products.find(product => product.productId === orderToGet.productId)
-        const orderSummary = `order summary: \n \n orderId: ${orderToGet.orderId} \n productId: ${orderToGet.productId} \n productName: ${product.productName} \n order quantity: ${orderToGet.orderQty} \n order value: ${orderToGet.orderValue} \n`
+        const orderSummary = `order summary: \n \n orderId: ${orderToGet.orderId} \n productId: ${orderToGet.productId} \n productName: ${product.productName} \n order quantity: ${orderToGet.orderQty}kg \n order value: $${orderToGet.orderValue} \n`
 
         res.status(200).send(orderSummary)
     }

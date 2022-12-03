@@ -40,14 +40,14 @@ const products = [
         productName: 'Orange',
         productQty: 20,
         pricePerUnit: 30,
-        soldQty:0
+        soldQty:33
     },
     {
         productId: 'p2',
         productName: 'Cherry',
         productQty: 20,
         pricePerUnit: 20,
-        soldQty:33
+        soldQty:3
     },
     {
         productId: 'p3',
@@ -104,7 +104,14 @@ const allUsersOrders = [
             productId: 'p1',
             orderQty: 6,
             orderValue: 60
-        }]
+        },
+        {
+            orderId: 'u2Or2',
+            productId: 'p2',
+            orderQty: 3,
+            orderValue: 60
+        }
+    ]
     },
     {
         userId: 'u3',

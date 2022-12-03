@@ -2,4 +2,5 @@
 const userRouter = require('./users')
 const productRouter = require('./products')
 const orderRouter = require('./order')
-module.exports = {userRouter, productRouter, orderRouter}
+const payment = require('./payment')
+module.exports = {userRouter, productRouter, orderRouter, payment}

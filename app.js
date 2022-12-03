@@ -1,6 +1,6 @@
 const express = require('express')
 const morgan = require('morgan');
-const {userRouter, productRouter, orderRouter} = require('./routes')
+const {userRouter, productRouter, orderRouter, payment} = require('./routes')
 
 require('dotenv').config({path: './.env'})
 
@@ -15,6 +15,7 @@ app.use(morgan(":method :url :status :res[content-length] - :response-time ms - 
 app.use('/users', userRouter)
 app.use('/products', productRouter)
 app.use('/orders', orderRouter)
+app.use('/payment', payment)
 app.get('/', (req, res)=>{
 
     res.status(200).send("<h1>Hello world</h1>")

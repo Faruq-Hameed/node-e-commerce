@@ -1,10 +1,11 @@
 const express = require('express');
-const { products, users } = require("../database")
+const { products, users } = require("../../database")
 const productRouter = express.Router()
 
 // productRouter.get('/', (req, res) => {
 //   res.status(200).send('hello world from product')
 // })
+
 
 
 productRouter.get('/', (req, res) => {

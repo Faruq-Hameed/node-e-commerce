@@ -47,7 +47,7 @@ const products = [
         productName: 'Cherry',
         productQty: 20,
         pricePerUnit: 20,
-        soldQty:0
+        soldQty:33
     },
     {
         productId: 'p3',
@@ -108,7 +108,19 @@ const allUsersOrders = [
     },
     {
         userId: 'u3',
-        userOrders: []
+        userOrders: [{
+            orderId: 'u3Or1',
+            productId: 'p1',
+            orderQty: 6,
+            orderValue: 60
+        },
+        {
+            orderId: 'u3Or2',
+            productId: 'p1',
+            orderQty: 6,
+            orderValue: 60
+        }
+    ]
     }
 
 ]

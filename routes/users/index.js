@@ -1,7 +1,8 @@
 const { application } = require('express');
 const express = require('express');
 const userRouter = express.Router();
-const { users, products, allUsersOrders } = require('../database')
+const { users, products, allUsersOrders } = require('../../database')
+
 
 
 // userRouter.get('*', (req, res) => {
@@ -14,6 +15,10 @@ const { users, products, allUsersOrders } = require('../database')
 //   })
 
 userRouter.get('/', (req, res) => {
+    if (req.body.userName ||req.body.password){
+        res.status(404).send('invalid user. Please enter correct username and password')
+        return
+    }
     const userName = req.body.userName.toLowerCase()
     const password = req.body.password.toLowerCase()
     const admin = users.find(user => user.userName === 'admin')
@@ -21,9 +26,22 @@ userRouter.get('/', (req, res) => {
         res.json({ subscribersInfo: users })
 
     }
-    else res.send('unknown user from user')
+    res.status(401).send('unauthorized')
 })
 
+userRouter.get('/:userId', (req, res) => {
+    const user = users.find(user => user.userId === req.params.userId)
+    if (!user) {
+        res.status(404).send('unknown user')
+        return
+    }
+    const userInfo = {}
+    for (keys in user) {
+        if (keys === "password" || keys === "walletBalance" ||keys === "email" ) continue //to hide the password & wallet balance
+        userInfo[keys] = user[keys]
+    }
+    res.status(200).json({ userInfo})
+})
 
 userRouter.post('/', (req, res) => {
     const newUser = req.body

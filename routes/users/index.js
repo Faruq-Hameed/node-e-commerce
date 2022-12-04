@@ -1,8 +1,8 @@
-const { application } = require('express');
 const express = require('express');
-const userRouter = express.Router();
 const { users, products, allUsersOrders } = require('../../database')
+const {getUser, getUserIndex, getItem} = require('../../modules') 
 
+const userRouter = express.Router();
 
 
 // userRouter.get('*', (req, res) => {
@@ -13,8 +13,7 @@ const { users, products, allUsersOrders } = require('../../database')
 
 
 userRouter.get('/', (req, res) => {
-
-    const admin = users.find(user => user.userName === 'admin')
+    const admin = getItem(users, "userName", 'admin')
     if (req.body.userName === admin.userName && req.body.password === admin.password) {
         res.json({ subscribersInfo: users })
         return
@@ -23,9 +22,10 @@ userRouter.get('/', (req, res) => {
 })
 
 userRouter.get('/:userId', (req, res) => {
-    const user = users.find(user => user.userId === req.params.userId)
+    const user = getUser(users, req.params.userId)
+    // const user = users.find(user => user.userId === req.params.userId)
     if (!user) return res.status(404).send('unknown user') 
-         
+
     const userInfo = {}
     for (keys in user) {
         if (keys === "password" || keys === "walletBalance" ||keys === "email" ) continue //to hide the password & wallet balance
@@ -54,7 +54,7 @@ userRouter.post('/', (req, res) => {
 })
 
 userRouter.patch('/:userId', (req, res) => {
-    const user = users.find(user => user.userId === req.params.userId)
+    const user = getUser(users, req.params.userId)
     if (!user) return res.status(404).send("unknown user")
     for (keys in req.body) {
         user[keys] = req.body[keys]
@@ -64,15 +64,16 @@ userRouter.patch('/:userId', (req, res) => {
 })
 
 userRouter.delete('/:userId', (req, res) => {
-    const user = users.find(user => user.userId === req.params.userId)
-    const userIndex = users.findIndex(user => user.userId === req.params.userId)
+    const user = getUser(users, req.params.userId)
     if (!user) return res.status(404).send("unknown user")
 
-    else {
-        const userCart = allUsersOrders.find(user => user.userId === req.params.userId)
-        users.splice(userIndex, 1) // remove the user from the list
-        userCart.userOrders.length = 0 //emptying the user cart for all orders but the user cart is still present
-        res.status(200).send( "delete successfully, your cart is emptied we hope to see you again")
-    }
+    const userIndex = getUserIndex(users, req.params.userId)
+
+    //const userCart = allUsersOrders.find(user => user.userId === req.params.userId)// former logic
+    const userCart = getUser(allUsersOrders, req.params.userId)
+    users.splice(userIndex, 1) // remove the user from the list
+    userCart.userOrders.length = 0 //emptying the user cart for all orders but the user cart is still present
+    res.status(200).send("delete successfully, your cart is emptied we hope to see you again")
+
 })
 module.exports = userRouter

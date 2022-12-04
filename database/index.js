@@ -132,5 +132,7 @@ const allUsersOrders = [
 
 ]
 
+const account = []
+
 module.exports = {products, users, allUsersOrders}
 

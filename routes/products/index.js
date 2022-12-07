@@ -30,7 +30,8 @@ productRouter.get('/', (req, res) => {
 })
 
 productRouter.get('/:id', (req, res) => {
-    const product = products.find(product => product.productId === req.params.id);
+    // const product = products.find(product => product.productId === req.params.id);
+    const product = getItem(products, "productId", req.params.id)
     if (product) {
         res.status(200).json({ product });
     }

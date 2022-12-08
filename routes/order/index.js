@@ -97,19 +97,15 @@ orderRouter.put('/:userId/:orderId', (req, res) => {
 orderRouter.delete('/:userId/:orderId', (req, res) => {
     const getOrderInfo = allUsersOrders.find(user => user.userOrders
         .find(order => order.orderId === req.params.orderId))
-    if (!getOrderInfo) {
-        res.status(404).send('unknown request. The order doesn\'t exist');
-        return
-    }
-    if (req.params.userId !== 'u1' && getOrderInfo.userId !== req.params.userId) {
-        res.status(401).send('unauthorized user'); //non admin trying to delete an order with the orderId of another user
-        return
-    }
-    const orderToDelete = getOrderInfo.userOrders.find(order => order.orderId === req.params.orderId)
+    if (!getOrderInfo) return res.status(404).send('unknown request. The order doesn\'t exist');   
+    //non admin trying to delete an order with the orderId of another user or unkonwn orderId    
+    if (req.params.userId !== 'u1' && getOrderInfo.userId !== req.params.userId) return res.status(401).send('unauthorized user'); 
+        
+    const orderToDelete = getItem(getOrderInfo.userOrders, "orderId", req.params.orderId)
     const orderIndex = getOrderInfo.userOrders.findIndex(order => order.orderId === req.params.orderId)
-    const product = products.find(product => product.productId === orderToDelete.productId)
+    const product = getItem(products, "productId", orderToDelete.productId)
 
-    // updating the product quantity in the store i.e database
+    // updating the product quantity in the stock i.e database
     product.productQty += orderToDelete.orderQty // returning the quantity back to the store(database)
     product.soldQty -= orderToDelete.orderQty // subtracting from the quantity outside the store
     getOrderInfo.userOrders.splice(orderIndex, 1) // deleting the order from the user cart

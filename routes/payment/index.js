@@ -1,8 +1,23 @@
 const express = require('express')
 const { products, users, allUsersOrders } = require("../../database")
+const {getUser, getUserIndex, getItem} = require('../../modules') 
 
 
 const payment = express.Router()
+
+payment.get('/:userId', (req, res) => {
+    let user = getUser(users, req.params.userId)
+    if (!user) return res.status(401).send('unauthorized user')
+
+    if (req.params.userId === 'u1') { // if user is trying to get his balance over the call center
+        user = getUser(users, req.body.userId) // get the user/caller by userId provided
+        if (req.body.email !== user.email || req.body.name !== user.name || req.body.username !== user.username) {
+            return res.status(401).send('identity verification failed. Tell user to login and try again himself.')
+        }
+    }
+    res.status(200).send(` Your wallet balance is $${user.walletBalance} \n Thank you`)
+
+})
 
 payment.post('/', (req, res) => {
 
@@ -10,17 +25,12 @@ payment.post('/', (req, res) => {
     const getOrderInfo = allUsersOrders.find(user => user.userOrders
         .find(order => order.orderId === req.body.orderId))
 
-    if (!getOrderInfo) {
-        res.status(404).send('unknown request. The order doesn\'t exist');
-        return
-    }
+    if (!getOrderInfo) return res.status(404).send('unknown request. The order doesn\'t exist');        
     //userId is used for authorization. an admin(e.g call center rep) can make payment but with valid orderId
-    if (req.body.userId !== 'u1' && req.body.userId !== getOrderInfo.userId) {
-        res.status(401).send('unauthorized user id');
-        return
-    }
-
+    if (req.body.userId !== 'u1' && req.body.userId !== getOrderInfo.userId) return res.status(401).send('unauthorized user id');
+        
     const user = users.find(user => user.userId === getOrderInfo.userId) //using orderId to get the user
+    if((user.password !== req.body.password && req.body.userId !== 'u1') || user.email !== req.body.email ) return res.status(401).send('incorrect login credentials');
     const orderValue = getOrderInfo.userOrders
         .find(order => order.orderId === req.body.orderId)
         .orderValue
@@ -44,8 +54,8 @@ payment.post('/', (req, res) => {
 
 payment.put('/:userId', (req, res)=>{
     const user = users.find(user => user.userId === req.params.userId)
-    const userName = req.body.userName.toLowerCase()
-    const password = req.body.password.toLowerCase()
+    const userName = req.body.userName.toLowerCase() 
+    const password = req.body.password && user.password === req.body.password
     const topUpValue = parseInt(req.body.credit)
     if (!userName || !password) {
         res.status(404).send('provide correct username and password');
@@ -55,9 +65,7 @@ payment.put('/:userId', (req, res)=>{
         res.status(403).send('unauthorized user');
         return
     }
-    if (!topUpValue){
 
-    }
     if (!topUpValue){
         res.status(404).send('bad request');
     return

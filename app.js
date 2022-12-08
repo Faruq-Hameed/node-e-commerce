@@ -15,7 +15,7 @@ app.use(morgan(":method :url :status :res[content-length] - :response-time ms - 
 app.use('/users', userRouter)
 app.use('/products', productRouter)
 app.use('/orders', orderRouter)
-app.use('/payment', payment)
+app.use('/payments', payment)
 
 app.get('/', (req, res)=>{
 

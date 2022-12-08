@@ -18,7 +18,7 @@ userRouter.get('/', (req, res) => {
 userRouter.get('/:userId', (req, res) => {
     const user = getUser(users, req.params.userId)
     // const user = users.find(user => user.userId === req.params.userId)
-    if (!user) return res.status(404).send('unknown user') 
+    if (!user) return res.status(401).send('unknown user') 
 
     const userInfo = {}
     for (keys in user) {
@@ -49,7 +49,7 @@ userRouter.post('/', (req, res) => {
 
 userRouter.patch('/:userId', (req, res) => {
     const user = getUser(users, req.params.userId)
-    if (!user) return res.status(404).send("unknown user")
+    if (!user) return res.status(401).send("unknown user")
     for (keys in req.body) {
         user[keys] = req.body[keys]
     }
@@ -59,7 +59,7 @@ userRouter.patch('/:userId', (req, res) => {
 
 userRouter.delete('/:userId', (req, res) => {
     const user = getUser(users, req.params.userId)
-    if (!user) return res.status(404).send("unknown user")
+    if (!user) return res.status(401).send("unknown user")
 
     const userIndex = getUserIndex(users, req.params.userId)
 

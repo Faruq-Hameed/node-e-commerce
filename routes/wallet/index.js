@@ -27,7 +27,6 @@ wallet.get('/:userId', (req, res) => {
 })
 
 
-
 wallet.patch('/:userId', (req, res) => {
     let user = getUser(users, req.params.userId)
     if (req.params.userId === 'u1') { // if user is trying to get his balance over the call center

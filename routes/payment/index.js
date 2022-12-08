@@ -5,19 +5,7 @@ const {getUser, getUserIndex, getItem} = require('../../modules')
 
 const payment = express.Router()
 
-payment.get('/:userId', (req, res) => {
-    let user = getUser(users, req.params.userId)
-    if (!user) return res.status(401).send('unauthorized user')
 
-    if (req.params.userId === 'u1') { // if user is trying to get his balance over the call center
-        user = getUser(users, req.body.userId) // get the user/caller by userId provided
-        if (req.body.email !== user.email || req.body.name !== user.name || req.body.username !== user.username) {
-            return res.status(401).send('identity verification failed. Tell user to login and try again himself.')
-        }
-    }
-    res.status(200).send(` Your wallet balance is $${user.walletBalance} \n Thank you`)
-
-})
 
 payment.post('/', (req, res) => {
 
@@ -52,29 +40,7 @@ payment.post('/', (req, res) => {
     }
 })
 
-payment.put('/:userId', (req, res)=>{
-    const user = users.find(user => user.userId === req.params.userId)
-    const userName = req.body.userName.toLowerCase() 
-    const password = req.body.password && user.password === req.body.password
-    const topUpValue = parseInt(req.body.credit)
-    if (!userName || !password) {
-        res.status(404).send('provide correct username and password');
-        return
-    }
-    if (!req.params.userId){
-        res.status(403).send('unauthorized user');
-        return
-    }
 
-    if (!topUpValue){
-        res.status(404).send('bad request');
-    return
-    }
-    user.walletBalance += topUpValue
-    res.status(200).send(`You just added $${topUpValue} to your wallet and new balance is: $${user.walletBalance}`);
-}
-
-)
 
 
 module.exports = payment

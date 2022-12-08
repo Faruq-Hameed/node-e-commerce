@@ -1,6 +1,6 @@
 const express = require('express')
 const morgan = require('morgan');
-const {userRouter, productRouter, orderRouter, payment} = require('./routes')
+const {userRouter, productRouter, orderRouter, payment, wallet} = require('./routes')
 
 require('dotenv').config({path: './.env'})
 
@@ -16,6 +16,7 @@ app.use('/users', userRouter)
 app.use('/products', productRouter)
 app.use('/orders', orderRouter)
 app.use('/payments', payment)
+app.use('/wallet', wallet)
 
 app.get('/', (req, res)=>{
 

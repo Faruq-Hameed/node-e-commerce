@@ -17,7 +17,7 @@ productRouter.get('/', (req, res) => {
     if (!userName || !password) return res.status(401).send('unauthorized user, provide a valid user name and password')
     if (userName === admin.userName && password === admin.password) return res.status(200).json({ products })
 
-    else if (userName === user.userName) { // if user is not an admin
+    if (userName === user.userName) { // if user is not an admin but userName is known
         let storeSummary = '';
         if (user) {
             let i = 0;
@@ -30,7 +30,6 @@ productRouter.get('/', (req, res) => {
 })
 
 productRouter.get('/:id', (req, res) => {
-    // const product = products.find(product => product.productId === req.params.id);
     const product = getItem(products, "productId", req.params.id)
     if (product) {
         res.status(200).json({ product });
@@ -44,7 +43,8 @@ productRouter.post('/', (req, res) => {
     const userName = req.body.userName.toLowerCase()
     const password = req.body.password.toLowerCase()
     const admin = getItem(users, "userName", 'admin')
-    if (userName === admin.userName && password === admin.password) {
+    if (userName !== admin.userName && password !== admin.password) return res.status(401).send('unauthorized')
+    
         delete req.body.userName
         delete req.body.password
         const newProduct = req.body
@@ -52,13 +52,12 @@ productRouter.post('/', (req, res) => {
         products.push(newProduct)
         console.log(newProduct)
         res.status(200).json({ newProduct })
-    }
 
-    else res.send('unknown user')
 })
 
 productRouter.put('/:userId/:productId', (req, res) => {
-    if ((req.params.userId) === 'u1') { //if user is an admin
+    if (req.params.userId !== 'u1') res.status(401).json('unauthorized user') // if user is not an admin
+
         const product = getItem(products, "productId", req.params.productId) // to get the product if it exists
         if (product) {
             const productIndex = getItemIndex(products, "productId", req.params.productId);
@@ -71,48 +70,41 @@ productRouter.put('/:userId/:productId', (req, res) => {
             products.splice(productIndex, 1, updatedProduct)
             res.status(200).json({ 'updated product': updatedProduct })
         }
-        else {
+        else { // if the product doesn't exist
             const newProduct = req.body
             newProduct.productId = 'p' + (products.length + 1)
             newProduct.productQty = req.body.quantity
             delete req.body.quantity
             products.push(newProduct)
-            console.log(newProduct)
             res.status(201).end(`new product created with ${newProduct.productId}`)
         }
-    }
-    else res.status(404).json('unauthorized user') // if user is not an admin
 })
 
 productRouter.patch('/:userId.:productId', (req, res) => {
-    if ((req.params.userId) === 'u1') {
-        const product = getItem(products, "productId", req.params.productId)
-        if (product) {
-            for (value in req.body) {
-                if (value === 'quantity') {
-                    product.productQty = req.body.quantity
-                }
-                product[value] = req.body[value]
-            }
-            res.status(200).json({ 'update successful': product })
+    if (!req.body.quantity) return res.status(404).send('no input found to update');
+    if (req.params.userId !== 'u1') return res.status(401).json('unauthorized user') // if user is not an admin   
+
+    const product = getItem(products, "productId", req.params.productId)
+
+    if (!product) return res.status(404).send('product not found to update') //if productId doesn't exist
+
+    for (value in req.body) {
+        if (value === 'quantity') {
+            product.productQty = req.body.quantity
         }
-        else res.status(404).send('product not found to update')
-        console.error(`Error updating a product with id ${req.params.productId}. let backend check it`) // telling backend
+        product[value] = req.body[value]
     }
-    else res.status(404).json('unauthorized user') // if user is not an admin    
+    res.status(200).json({ 'update successful': product })
 })
 
-productRouter.delete('/:userId.:productId', (req, res) => {
-    if ((req.params.userId) === 'u1') {
-        const productIndex = getItemIndex(products, "productId", req.params.productId)
-        if (productIndex >= 0) {
-            products.splice(productIndex, 1)
-            res.status(200).end('successfully delete')
-        }
-        else res.status(404).end('product not found')
-    }
-    else res.status(404).end('unauthorized user')
+productRouter.delete('/:userId/:productId', (req, res) => {
+    if (req.params.userId !== 'u1') return res.status(401).end('unauthorized user')
+    const productIndex = getItemIndex(products, "productId", req.params.productId)
 
+    if (productIndex < 0) return res.status(404).end('product not found')
+
+    products.splice(productIndex, 1)
+    res.status(200).end('successfully delete')
 })
 
 module.exports = productRouter

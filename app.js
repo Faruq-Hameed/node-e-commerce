@@ -16,10 +16,16 @@ app.use('/users', userRouter)
 app.use('/products', productRouter)
 app.use('/orders', orderRouter)
 app.use('/payment', payment)
+
 app.get('/', (req, res)=>{
 
     res.status(200).send("<h1>Hello world</h1>")
 })
+
+//handling all unknown url requests.
+app.use(function (req, res, next) {
+    res.status(404).send("Sorry can't find that! Request failed")
+  });
 
 app.listen(port, ()=>{
     console.info('listening on port ', port)

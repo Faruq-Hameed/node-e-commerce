@@ -5,12 +5,6 @@ const {getUser, getUserIndex, getItem} = require('../../modules')
 const userRouter = express.Router();
 
 
-// userRouter.get('*', (req, res) => {
-//     res.status(404).send('unknown request')
-// })
-
-
-
 
 userRouter.get('/', (req, res) => {
     const admin = getItem(users, "userName", 'admin')

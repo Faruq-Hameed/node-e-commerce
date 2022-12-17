@@ -10,27 +10,28 @@ orderRouter.get('/:userId', (req, res) => {
     const user = getUser(users, req.params.userId)
     if (!user) return res.status(401).send('unknown user')
 
-    if (req.params.userId === 'u1') res.status(200).json({ allUsersOrders }); // for admin user
+    if (req.params.userId === 'u1') res.status(200).json({ 'All Users Orders': allUsersOrders }); // for admin user & get all orders
 
-    // for non-admin users
+    // for non-admin users i.e for getting a specific user order summary
     const userOrder = getUser(allUsersOrders, req.params.userId)
     if (userOrder.userOrders.length === 0) return res.status(200).send('your cart is empty')
 
     let orderSummary = 'below is your cart summary: \n \n' //if user cart is not empty
     let i = 0;
-    userOrder.userOrders.map( order => { // trying to return user carts as sentences
+    userOrder.userOrders.map( order => { // trying to return user carts as a summarized sentences
             orderSummary += `\n ${++i}). orderId: ${order.orderId} ; productId ${order.productId} ; quantity: ${order.orderQty}kg;with value: $${order.orderValue} `
         })
     res.status(200).send(orderSummary)
 
 })
 
-//getting a specific order for a given userId with the orderId
+//getting a specific order information for a given userId with the orderId
 orderRouter.get('/:userId/:orderId', (req, res) => {
-    const getOrderInfo = allUsersOrders.find(user => user.userOrders
+    const getOrderInfo = allUsersOrders.find(user => user.userOrders //getting the order by the order id
         .find(order => order.orderId === req.params.orderId))
-    if (!getOrderInfo) return res.status(404).send('unknown request. The order doesn\'t exist');       
-     // if the user doesn't exist or request is an orderId of another user
+    if (!getOrderInfo) return res.status(404).send('unknown request. The order doesn\'t exist');   
+
+     // if the user doesn't exist or request is an orderId of another user && the user is not an admin
     if (req.params.userId !== 'u1' && getOrderInfo.userId !== req.params.userId) return res.status(401).send('unauthorized request/user')
         // an admin user can access any order with the id
         const orderToGet = getItem(getOrderInfo.userOrders, "orderId", req.params.orderId)
@@ -46,7 +47,7 @@ orderRouter.post('/', (req, res) => {
     const currentUserOrder = getUser(allUsersOrders, req.body.userId)
 
     if (!currentUserOrder) return res.status(401).send('kindly sign in or register to make an order')
-    if (!product || product.productQty === 0) return res.status(404).send('order not found or out of stock')
+    if (!product || product.productQty === 0) return res.status(404).send('product not found or out of stock')
     if (!req.body.quantity || parseInt(req.body.quantity) * 0 !== 0) return res.status(404).send('provide a valid quantity')
     if(parseInt(req.body.quantity) > product.productQty) return res.status(400).send(`we only have ${product.productQty}kg in stock`)
     

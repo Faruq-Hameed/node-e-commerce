@@ -12,11 +12,11 @@ app.use(express.urlencoded({extended: true}))
 app.use(morgan(":method :url :status :res[content-length] - :response-time ms - :remote-user :date"))
 
 
-app.use('/users', userRouter)
-app.use('/products', productRouter)
-app.use('/orders', orderRouter)
-app.use('/payments', payment)
-app.use('/wallet', wallet)
+app.use('/api/users', userRouter)
+app.use('/api/products', productRouter)
+app.use('/api/orders', orderRouter)
+app.use('/api/payments', payment)
+app.use('/api/wallet', wallet)
 
 app.get('/', (req, res)=>{
 

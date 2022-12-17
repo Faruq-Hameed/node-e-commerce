@@ -9,7 +9,7 @@ const { getItem, getItemIndex } = require('../../modules')
 
 
 
-productRouter.get('/', (req, res) => {
+productRouter.get('/', (req, res) => { ///****** needed adjustment. Anyone should have access to this */
     const userName = req.body.userName
     const password = req.body.password
     const admin = users.find(user => user.userName === 'admin')
@@ -37,7 +37,7 @@ productRouter.get('/:id', (req, res) => {
     else res.status(404).send('unknown product')
 })
 
-
+//only admin user has the permissions to do everything below:
 
 productRouter.post('/', (req, res) => {
     const userName = req.body.userName.toLowerCase()
@@ -70,7 +70,7 @@ productRouter.put('/:userId/:productId', (req, res) => {
             products.splice(productIndex, 1, updatedProduct)
             res.status(200).json({ 'updated product': updatedProduct })
         }
-        else { // if the product doesn't exist
+        else { // if the product doesn't exist /// \\\\*** needed to be updated for possible errors
             const newProduct = req.body
             newProduct.productId = 'p' + (products.length + 1)
             newProduct.productQty = req.body.quantity

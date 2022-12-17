@@ -22,7 +22,7 @@ userRouter.get('/:userId', (req, res) => {
 
     const userInfo = {}
     for (keys in user) {
-        if (keys === "password" || keys === "walletBalance" ||keys === "email" ) continue //to hide the password & wallet balance
+        if (keys === "password" || keys === "walletBalance" ||keys === "email" ) continue //to hide the password, wallet balance & email
         userInfo[keys] = user[keys]
     }
     res.status(200).json({ userInfo})
@@ -33,7 +33,7 @@ userRouter.post('/', (req, res) => {
     if (newUser.name && newUser.email && newUser.password && newUser.userName) { //checking if all fields are provided
         newUser.userId = 'u' + (users.length + 1)
         newUser.walletBalance = req.body.credit || 0
-        delete req.body.credit
+        delete req.body.credit//credit is deleted if present because wallet balance is recognized not credit
         newUser.status = true
         newUser.dateSignedUp = new Date()
         users.push(newUser) //adding new user to the database
@@ -65,7 +65,7 @@ userRouter.delete('/:userId', (req, res) => {
 
     //const userCart = allUsersOrders.find(user => user.userId === req.params.userId)// former logic
     const userCart = getUser(allUsersOrders, req.params.userId)
-    users.splice(userIndex, 1) // remove the user from the list
+    users.splice(userIndex, 1) // remove the user from the list(database)
     userCart.userOrders.length = 0 //emptying the user cart for all orders but the user cart is still present
     res.status(200).send("delete successfully, your cart is emptied we hope to see you again")
 

@@ -1,26 +1,43 @@
 const express = require('express')
 const morgan = require('morgan');
-const {userRouter, productRouter, orderRouter, payment, wallet} = require('./routes')
+const helmet = require('helmet');
+
+const {db_connection,client} = require('./database/mongoDb')
+const {users, products, order, payment, wallet} = require('./routes')
+
 
 require('dotenv').config({path: './.env'})
 
 const port = process.env.PORT || 3000
 const app = express();
 
+db_connection()
+    .then(result => {
+        console.log('connected to database:', client)
+    }).catch(err => {
+        console.log('error connecting to database:', err.message)
+        process.exit(1)
+    })
+
+
 app.use(express.json())
 app.use(express.urlencoded({extended: true}))
 app.use(morgan(":method :url :status :res[content-length] - :response-time ms - :remote-user :date"))
+app.use(helmet())
 
 
-app.use('/api/users', userRouter)
-app.use('/api/products', productRouter)
-app.use('/api/orders', orderRouter)
+app.use('/api/users', users)
+app.use('/api/products', products)
+app.use('/api/orders', order)
 app.use('/api/payments', payment)
 app.use('/api/wallet', wallet)
 
+app.use('/static',express.static('./public')) //added virtual prefix('/static'. It is needed to get public files directly)
+
 app.get('/', (req, res)=>{
 
-    res.status(200).send("<h1>Hello world</h1>")
+    res.render('index')
+    // res.status(200).send("<h1>Hello world</h1>")
 })
 
 //handling all unknown url requests.

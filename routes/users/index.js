@@ -1,18 +1,66 @@
 const express = require('express');
 const { users, products, allUsersOrders } = require('../../database')
 const {getUser, getUserIndex, getItem} = require('../../modules') 
+const {db_connection} = require('../../database/mongoDb')
+const User = require('../../database/models/user')
+const Password = require('../../database/models/password')
+const {signUpSchema} = require('../../utils/input_schema/user')
+const {doesUserExist} = require('../../utils/errors/users')
+const {securePassword} = require('../../database/password') 
+
 
 const userRouter = express.Router();
 
 
+userRouter.get('/db', (req, res) => {
+    const new_article = async () => {
+       const article = await Blog.create({
+            title: 'Awesome Post90!',
+            slug: 'awesome-post90',
+            published: true,
+            content: 'This is the best post ever',
+            tags: ['featured', 'announcement'],
+        })
+    console.log(article)
+        return article
+    }
+    const main = async () => {
+        try{
+           await new_article()
+           .then(article =>{
+            res.status(200).json(
+                {
+                    message : "success",
+                    new_article : article
+                }
+            )
+           })
+            
+        }
+        catch(err) {
+            res.status(500).json(
+                {
+                    message : "failed",
+                }
+            )
+        }
+       
+    }
+    main()
+
+})
 
 userRouter.get('/', (req, res) => {
-    const admin = getItem(users, "userName", 'admin')
-    if (req.body.userName === admin.userName && req.body.password === admin.password) {
-        res.json({ subscribersInfo: users })
-        return
+    async function getAllUsers(){
+        try{
+            const allUsers = await User.find({})
+            res.status(200).json(allUsers)
+        }
+        catch(err){
+            res.status(500).json({message: err.message});
+        }
     }
-    res.status(401).send('unauthorized')
+    getAllUsers()
 })
 
 userRouter.get('/:userId', (req, res) => {
@@ -29,22 +77,56 @@ userRouter.get('/:userId', (req, res) => {
 })
 
 userRouter.post('/', (req, res) => {
-    const newUser = req.body
-    if (newUser.name && newUser.email && newUser.password && newUser.userName) { //checking if all fields are provided
-        newUser.userId = 'u' + (users.length + 1)
-        newUser.walletBalance = req.body.credit || 0
-        delete req.body.credit//credit is deleted if present because wallet balance is recognized not credit
-        newUser.status = true
-        newUser.dateSignedUp = new Date()
-        users.push(newUser) //adding new user to the database
-        const newUserCart = {//creating an  empty cart object for the new user
-            userId: newUser.userId,
-            userOrders: []
-        }
-        allUsersOrders.push(newUserCart) // adding the empty cart object to the database
-        res.status(200).json({ userSummary: newUser })
+    //validating the user inputs with joi schema
+    const validation = signUpSchema(req.body) 
+    if (validation.error) {
+        res.status(400).send(validation.error.details[0].message);
+        return;
     }
-    else res.status(404).send("kindly input the required fields")
+
+    
+    const signUp = async () => {
+        try {
+            //checking if the values are not already in the database
+            const itemExist = await doesUserExist(User,validation.value,'email', 'userName', 'mobileNumber', res)
+            if(itemExist) {
+                return res.status(itemExist.status).json({message:itemExist.message})
+            }; 
+
+            //storing the validated objects to the database
+            const newUser = await User.create(validation.value);
+
+            const password = await Password.create({
+                password: await securePassword(validation.value.password),
+                user_id: newUser._id
+            })            
+            
+            res.status(200).json({ userSummary: newUser, password: password});
+        }
+        catch (err) {
+            res.status(400).send(err.message);
+
+        }
+    }
+    signUp()
+
+
+    // const newUser = req.body
+    // if (newUser.name && newUser.email && newUser.password && newUser.userName) { //checking if all fields are provided
+    //     newUser.userId = 'u' + (users.length + 1)
+    //     newUser.walletBalance = req.body.credit || 0
+    //     delete req.body.credit//credit is deleted if present because wallet balance is recognized not credit
+    //     newUser.status = true
+    //     newUser.dateSignedUp = new Date()
+    //     users.push(newUser) //adding new user to the database
+    //     const newUserCart = {//creating an  empty cart object for the new user
+    //         userId: newUser.userId,
+    //         userOrders: []
+    //     }
+    //     allUsersOrders.push(newUserCart) // adding the empty cart object to the database
+    //     res.status(200).json({ userSummary: newUser })
+    // }
+    // else res.status(404).send("kindly input the required fields")
 })
 
 userRouter.patch('/:userId', (req, res) => {

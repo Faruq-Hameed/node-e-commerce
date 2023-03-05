@@ -1,7 +1,7 @@
 // const express = require('express')
-const userRouter = require('./users')
-const productRouter = require('./products')
-const orderRouter = require('./order')
+const users = require('./users')
+const products = require('./products')
+const order = require('./order')
 const payment = require('./payment')
 const wallet = require('./wallet')
-module.exports = {userRouter, productRouter, orderRouter, payment, wallet}
+module.exports = {users, products, order, payment, wallet}

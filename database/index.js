@@ -132,7 +132,9 @@ const allUsersOrders = [
 
 ]
 
-const account = []
+const {db_connection, URI} = require('./mongoDb')
+const { securePassword } = require('./password')
+const { doesUserExist } = require('./existErrors')
 
-module.exports = {products, users, allUsersOrders}
+module.exports = {products, users, allUsersOrders,db_connection,URI,securePassword, doesUserExist }
 

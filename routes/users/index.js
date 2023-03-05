@@ -1,18 +1,14 @@
 const express = require('express');
-const { users, products, allUsersOrders } = require('../../database')
-const {getUser, getUserIndex, getItem} = require('../../modules') 
-const {db_connection} = require('../../database/mongoDb')
-const User = require('../../database/models/user')
-const Password = require('../../database/models/password')
-const {signUpSchema} = require('../../utils/input_schema/user')
-const {doesUserExist} = require('../../utils/errors/users')
-const {securePassword} = require('../../database/password') 
+// const { users, products, allUsersOrders } = require('../../database')
+// const {getUser, getUserIndex, getItem} = require('../../modules') 
+const {Password, User, Product} = require('../../database/models')
+const {securePassword, doesUserExist} = require('../../database') 
+const {signUpSchema} = require('../../utils/input_schema')
 
 
-const userRouter = express.Router();
+const router = express.Router();
 
-
-userRouter.get('/db', (req, res) => {
+router.get('/db', (req, res) => {
     const new_article = async () => {
        const article = await Blog.create({
             title: 'Awesome Post90!',
@@ -50,7 +46,7 @@ userRouter.get('/db', (req, res) => {
 
 })
 
-userRouter.get('/', (req, res) => {
+router.get('/', (req, res) => {
     async function getAllUsers(){
         try{
             const allUsers = await User.find({})
@@ -63,35 +59,36 @@ userRouter.get('/', (req, res) => {
     getAllUsers()
 })
 
-userRouter.get('/:userId', (req, res) => {
-    const user = getUser(users, req.params.userId)
-    // const user = users.find(user => user.userId === req.params.userId)
-    if (!user) return res.status(401).send('unknown user') 
+router.get('/:userId', (req, res) => {
+    const getUserById = async () => {
+        try {
+            const user = await User.findById(req.params.userId)
+            res.status(200).send({ user })
+        }
+        catch (err) {
+            return res.status(401).send('unknown user')
+        }
 
-    const userInfo = {}
-    for (keys in user) {
-        if (keys === "password" || keys === "walletBalance" ||keys === "email" ) continue //to hide the password, wallet balance & email
-        userInfo[keys] = user[keys]
     }
-    res.status(200).json({ userInfo})
+    getUserById()
+
 })
 
-userRouter.post('/', (req, res) => {
+router.post('/', (req, res) => {
     //validating the user inputs with joi schema
-    const validation = signUpSchema(req.body) 
+    const validation = signUpSchema(req.body)
     if (validation.error) {
-        res.status(400).send(validation.error.details[0].message);
+        res.status(422).send(validation.error.details[0].message);
         return;
     }
 
-    
     const signUp = async () => {
         try {
             //checking if the values are not already in the database
-            const itemExist = await doesUserExist(User,validation.value,'email', 'userName', 'mobileNumber', res)
-            if(itemExist) {
-                return res.status(itemExist.status).json({message:itemExist.message})
-            }; 
+            const itemExist = await doesUserExist(User, validation.value, 'email', 'userName', 'mobileNumber', res)
+            if (itemExist) {
+                return res.status(itemExist.status).json({ message: itemExist.message })
+            };
 
             //storing the validated objects to the database
             const newUser = await User.create(validation.value);
@@ -99,37 +96,20 @@ userRouter.post('/', (req, res) => {
             const password = await Password.create({
                 password: await securePassword(validation.value.password),
                 user_id: newUser._id
-            })            
-            
-            res.status(200).json({ userSummary: newUser, password: password});
+            })
+
+            res.status(200).json({ userSummary: newUser, password: password });
         }
         catch (err) {
             res.status(400).send(err.message);
 
         }
     }
+    //calling the async function for the signup process
     signUp()
-
-
-    // const newUser = req.body
-    // if (newUser.name && newUser.email && newUser.password && newUser.userName) { //checking if all fields are provided
-    //     newUser.userId = 'u' + (users.length + 1)
-    //     newUser.walletBalance = req.body.credit || 0
-    //     delete req.body.credit//credit is deleted if present because wallet balance is recognized not credit
-    //     newUser.status = true
-    //     newUser.dateSignedUp = new Date()
-    //     users.push(newUser) //adding new user to the database
-    //     const newUserCart = {//creating an  empty cart object for the new user
-    //         userId: newUser.userId,
-    //         userOrders: []
-    //     }
-    //     allUsersOrders.push(newUserCart) // adding the empty cart object to the database
-    //     res.status(200).json({ userSummary: newUser })
-    // }
-    // else res.status(404).send("kindly input the required fields")
 })
 
-userRouter.patch('/:userId', (req, res) => {
+router.patch('/:userId', (req, res) => {
     const user = getUser(users, req.params.userId)
     if (!user) return res.status(401).send("unknown user")
     for (keys in req.body) {
@@ -139,7 +119,7 @@ userRouter.patch('/:userId', (req, res) => {
 
 })
 
-userRouter.delete('/:userId', (req, res) => {
+router.delete('/:userId', (req, res) => {
     const user = getUser(users, req.params.userId)
     if (!user) return res.status(401).send("unknown user")
 
@@ -152,4 +132,4 @@ userRouter.delete('/:userId', (req, res) => {
     res.status(200).send("delete successfully, your cart is emptied we hope to see you again")
 
 })
-module.exports = userRouter
+module.exports = router

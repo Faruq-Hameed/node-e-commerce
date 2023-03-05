@@ -2,7 +2,7 @@ const express = require('express')
 const morgan = require('morgan');
 const helmet = require('helmet');
 
-const {db_connection,client} = require('./database/mongoDb')
+const {db_connection,URI} = require('./database')
 const {users, products, order, payment, wallet} = require('./routes')
 
 
@@ -13,7 +13,7 @@ const app = express();
 
 db_connection()
     .then(result => {
-        console.log('connected to database:', client)
+        console.log('connected to database:', URI)
     }).catch(err => {
         console.log('error connecting to database:', err.message)
         process.exit(1)

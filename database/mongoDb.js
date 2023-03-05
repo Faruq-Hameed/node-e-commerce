@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
-const client = "mongodb://127.0.0.1:27017"
+const URI = "mongodb://127.0.0.1:27017"
 const db_connection = async ()=> {
-      return await mongoose.connect(client)
+      return await mongoose.connect(URI)
 }
 
-module.exports ={db_connection,client}
+module.exports ={db_connection,URI}

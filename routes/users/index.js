@@ -1,59 +1,59 @@
 const express = require('express');
 // const { users, products, allUsersOrders } = require('../../database')
 // const {getUser, getUserIndex, getItem} = require('../../modules') 
-const {Password, User, Product} = require('../../database/models')
-const {securePassword, doesUserExist} = require('../../database') 
-const {signUpSchema} = require('../../utils/input_schema')
+const { Password, User, Product } = require('../../database/models')
+const { securePassword, doesUserExist } = require('../../database')
+const { signUpSchema } = require('../../utils/input_schema')
 
 
 const router = express.Router();
 
 router.get('/db', (req, res) => {
     const new_article = async () => {
-       const article = await Blog.create({
+        const article = await Blog.create({
             title: 'Awesome Post90!',
             slug: 'awesome-post90',
             published: true,
             content: 'This is the best post ever',
             tags: ['featured', 'announcement'],
         })
-    console.log(article)
+        console.log(article)
         return article
     }
     const main = async () => {
-        try{
-           await new_article()
-           .then(article =>{
-            res.status(200).json(
-                {
-                    message : "success",
-                    new_article : article
-                }
-            )
-           })
-            
+        try {
+            await new_article()
+                .then(article => {
+                    res.status(200).json(
+                        {
+                            message: "success",
+                            new_article: article
+                        }
+                    )
+                })
+
         }
-        catch(err) {
+        catch (err) {
             res.status(500).json(
                 {
-                    message : "failed",
+                    message: "failed",
                 }
             )
         }
-       
+
     }
     main()
 
 })
 
 router.get('/', (req, res) => {
-    async function getAllUsers(){
-        try{
+    async function getAllUsers() {
+        try {
             const allUsers = await User.find({})
             res.status(200).json(allUsers)
         }
-        catch(err){
-            res.status(500).json({message: err.message});
+        catch (err) {
+            res.status(500).json({ message: err.message });
         }
     }
     getAllUsers()
@@ -120,16 +120,28 @@ router.patch('/:userId', (req, res) => {
 })
 
 router.delete('/:userId', (req, res) => {
-    const user = getUser(users, req.params.userId)
-    if (!user) return res.status(401).send("unknown user")
+    const deleteUser = async () => {
+        try {
+            const user = await User.findByIdAndDelete(req.params.userId)
+            if (user) {
+                res.status(200).send({ message: "delete successfully", user: user })
+                return;
+            }
+            res.status(403).send({ message: "user account already deleted" }) //incase null was returned
+        }
+        catch (err) {
+            return res.status(401).send('unknown user')
+        }
 
-    const userIndex = getUserIndex(users, req.params.userId)
-
-    //const userCart = allUsersOrders.find(user => user.userId === req.params.userId)// former logic
-    const userCart = getUser(allUsersOrders, req.params.userId)
-    users.splice(userIndex, 1) // remove the user from the list(database)
-    userCart.userOrders.length = 0 //emptying the user cart for all orders but the user cart is still present
-    res.status(200).send("delete successfully, your cart is emptied we hope to see you again")
-
+    }
+    deleteUser()
+    // //const userCart = allUsersOrders.find(user => user.userId === req.params.userId)// former logic
+    // const userCart = getUser(allUsersOrders, req.params.userId)
+    // users.splice(userIndex, 1) // remove the user from the list(database)
+    // userCart.userOrders.length = 0 //emptying the user cart for all orders but the user cart is still present
+    // res.status(200).send("delete successfully, your cart is emptied we hope to see you again")
 })
+
+
+
 module.exports = router

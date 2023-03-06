@@ -2,55 +2,27 @@ const express = require('express');
 // const { users, products, allUsersOrders } = require('../../database')
 // const {getUser, getUserIndex, getItem} = require('../../modules') 
 const { Password, User, Product } = require('../../database/models')
-const { securePassword, doesUserExist } = require('../../database')
-const { signUpSchema } = require('../../utils/input_schema')
+const { securePassword, doesUserExist,doesUserInfoExist } = require('../../database')
+const { signUpSchema,userPutMethodSchema } = require('../../utils/input_schema')
+const {paginate, paginationError} = require('../../utils');
+const { response } = require('express');
 
 
 const router = express.Router();
-
-router.get('/db', (req, res) => {
-    const new_article = async () => {
-        const article = await Blog.create({
-            title: 'Awesome Post90!',
-            slug: 'awesome-post90',
-            published: true,
-            content: 'This is the best post ever',
-            tags: ['featured', 'announcement'],
-        })
-        console.log(article)
-        return article
-    }
-    const main = async () => {
-        try {
-            await new_article()
-                .then(article => {
-                    res.status(200).json(
-                        {
-                            message: "success",
-                            new_article: article
-                        }
-                    )
-                })
-
-        }
-        catch (err) {
-            res.status(500).json(
-                {
-                    message: "failed",
-                }
-            )
-        }
-
-    }
-    main()
-
-})
 
 router.get('/', (req, res) => {
     async function getAllUsers() {
         try {
             const allUsers = await User.find({})
-            res.status(200).json(allUsers)
+
+            //paginating the results to be returned to the user
+            const error = paginationError(allUsers, req)
+            if (error) {
+                res.status(error.status).json({message: error.message})
+                return;
+            }
+            const paginatedUsersList = paginate(allUsers, req)
+            res.status(200).json(paginatedUsersList)
         }
         catch (err) {
             res.status(500).json({ message: err.message });
@@ -59,19 +31,48 @@ router.get('/', (req, res) => {
     getAllUsers()
 })
 
-router.get('/:userId', (req, res) => {
+// router.get('/:userId', (req, res) => {
+//     const getUserById = async () => {
+//         try {
+//             const user = await User.findById(req.params.userId)
+//             if (!user) {
+//                 res.status(410).send({ message: "user account already deleted" }) //incase null was returned
+//                 return;
+//             }
+//             res.status(200).send({ user })
+//         }
+//         catch (err) {
+//             res.status(401).send('unknown user')
+//             return;
+//         }
+//     }
+//     getUserById()
+// })
+
+router.get('/search', (req, res) => {
     const getUserById = async () => {
-        try {
-            const user = await User.findById(req.params.userId)
+        const value = (req.query.email)
+            ? { email: req.query.email } : (req.query.userName)
+                ? { userName: req.query.userName } : (req.query.mobileNumber)
+                    ? { mobileNumber: req.query.mobileNumber } : false
+        try {add
+            console.log({value}, 1)
+
+            const user = await User.findById(value)
+            console.log({value},2)
+
+            if (!user) {
+                res.status(410).send({ message: "user account already deleted" }) //incase null was returned
+                return;
+            }
             res.status(200).send({ user })
         }
         catch (err) {
-            return res.status(401).send('unknown user')
+            res.status(401).send('unknown user')
+            return;
         }
-
     }
     getUserById()
-
 })
 
 router.post('/', (req, res) => {
@@ -85,7 +86,7 @@ router.post('/', (req, res) => {
     const signUp = async () => {
         try {
             //checking if the values are not already in the database
-            const itemExist = await doesUserExist(User, validation.value, 'email', 'userName', 'mobileNumber', res)
+            const itemExist = await doesUserExist(User, validation.value, 'email', 'userName', 'mobileNumber')
             if (itemExist) {
                 return res.status(itemExist.status).json({ message: itemExist.message })
             };
@@ -109,14 +110,41 @@ router.post('/', (req, res) => {
     signUp()
 })
 
-router.patch('/:userId', (req, res) => {
-    const user = getUser(users, req.params.userId)
-    if (!user) return res.status(401).send("unknown user")
-    for (keys in req.body) {
-        user[keys] = req.body[keys]
-    }
-    res.status(200).json({ "update successfully": user })
+router.put('/:userId', (req, res) => {
 
+    const getUserById = async () => {
+        try {
+            const user = await User.findById(req.params.userId)
+            if (!user) {
+                res.status(410).send({ message: "user account already deleted" }) //incase null was returned
+                return;
+            }
+
+            const validation = userPutMethodSchema(req.body)
+            if (validation.error) {
+                res.status(422).send(validation.error.details[0].message);
+                return;
+            }
+            const itemExist = await doesUserInfoExist(user, User, validation.value, 'email', 'userName', 'mobileNumber')
+
+            if (itemExist) { //if we already have user that matches the email,username or mobileNumber
+                return res.status(itemExist.status).json({ message: itemExist.message })
+            };
+
+            //using a loop to check through the keys and update to the validated value submitted by the user            
+            for (keys in validation.value) {
+                user[keys] = validation.value[keys]
+            }
+
+            return res.status(200).send({ user })
+        }
+        catch (err) {
+            res.status(401).send('unknown user')
+            return;
+        }
+
+    }
+    getUserById()
 })
 
 router.delete('/:userId', (req, res) => {
@@ -127,7 +155,7 @@ router.delete('/:userId', (req, res) => {
                 res.status(200).send({ message: "delete successfully", user: user })
                 return;
             }
-            res.status(403).send({ message: "user account already deleted" }) //incase null was returned
+            res.status(410).send({ message: "user account already deleted" }) //incase null was returned
         }
         catch (err) {
             return res.status(401).send('unknown user')

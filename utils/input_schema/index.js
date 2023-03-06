@@ -1,3 +1,3 @@
-const {signUpSchema} = require('./joiSchema')
+const {signUpSchema,userPutMethodSchema} = require('./joiSchema')
 
-module.exports = {signUpSchema}
+module.exports = {signUpSchema,userPutMethodSchema}

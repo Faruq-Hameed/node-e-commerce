@@ -31,36 +31,10 @@ router.get('/', (req, res) => {
     getAllUsers()
 })
 
-// router.get('/:userId', (req, res) => {
-//     const getUserById = async () => {
-//         try {
-//             const user = await User.findById(req.params.userId)
-//             if (!user) {
-//                 res.status(410).send({ message: "user account already deleted" }) //incase null was returned
-//                 return;
-//             }
-//             res.status(200).send({ user })
-//         }
-//         catch (err) {
-//             res.status(401).send('unknown user')
-//             return;
-//         }
-//     }
-//     getUserById()
-// })
-
-router.get('/search', (req, res) => {
+router.get('/:userId', (req, res) => {
     const getUserById = async () => {
-        const value = (req.query.email)
-            ? { email: req.query.email } : (req.query.userName)
-                ? { userName: req.query.userName } : (req.query.mobileNumber)
-                    ? { mobileNumber: req.query.mobileNumber } : false
-        try {add
-            console.log({value}, 1)
-
-            const user = await User.findById(value)
-            console.log({value},2)
-
+        try {
+            const user = await User.findById(req.params.userId)
             if (!user) {
                 res.status(410).send({ message: "user account already deleted" }) //incase null was returned
                 return;
@@ -71,6 +45,22 @@ router.get('/search', (req, res) => {
             res.status(401).send('unknown user')
             return;
         }
+    }
+    getUserById()
+})
+
+router.get('/user/search/', (req, res) => {
+    const getUserById = async () => {
+        const value = (req.query.email)
+            ? { email: req.query.email } : (req.query.userName)
+                ? { userName: req.query.userName } : (req.query.mobileNumber)
+                    ? { mobileNumber: req.query.mobileNumber } : false
+            const user = await User.findOne(value)
+            if (!user) {
+                res.status(404).send({ message: 'no user with found' }) //incase null was returned
+                return;
+            }
+            res.status(200).send({ user })
     }
     getUserById()
 })

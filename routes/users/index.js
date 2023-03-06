@@ -1,12 +1,8 @@
-const express = require('express');
-// const { users, products, allUsersOrders } = require('../../database')
-// const {getUser, getUserIndex, getItem} = require('../../modules') 
-const { Password, User, Product } = require('../../database/models')
+const express = require('express'); 
+const { Password, User, Products } = require('../../database/models')
 const { securePassword, doesUserExist,doesUserInfoExist } = require('../../database')
 const { signUpSchema,userPutMethodSchema } = require('../../utils/input_schema')
 const {paginate, paginationError} = require('../../utils');
-const { response } = require('express');
-
 
 const router = express.Router();
 
@@ -18,7 +14,7 @@ router.get('/', (req, res) => {
             //paginating the results to be returned to the user
             const error = paginationError(allUsers, req)
             if (error) {
-                res.status(error.status).json({message: error.message})
+                res.status(error.status).json({ message: error.message })
                 return;
             }
             const paginatedUsersList = paginate(allUsers, req)
@@ -49,6 +45,7 @@ router.get('/:userId', (req, res) => {
     getUserById()
 })
 
+//search for user with email, username or mobile number
 router.get('/user/search/', (req, res) => {
     const getUserById = async () => {
         const value = (req.query.email)
@@ -57,7 +54,7 @@ router.get('/user/search/', (req, res) => {
                     ? { mobileNumber: req.query.mobileNumber } : false
             const user = await User.findOne(value)
             if (!user) {
-                res.status(404).send({ message: 'no user with found' }) //incase null was returned
+                res.status(404).send({ message: 'no user with found' }) 
                 return;
             }
             res.status(200).send({ user })

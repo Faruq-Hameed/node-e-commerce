@@ -18,7 +18,7 @@ function paginationError(array,req){
 
     //if the database provide is undefined or empty
     if (!array || array.length === 0) {
-        let response = { status: 404, message: 'no users available'}
+        let response = { status: 404, message: 'no item available'}
         return response;
     }
 

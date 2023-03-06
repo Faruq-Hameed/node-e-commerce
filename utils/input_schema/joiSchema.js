@@ -1,6 +1,6 @@
 const joi = require("joi");
 
-function signUpSchema(input) { //user sign up schema (post & put request)
+function signUpSchema(inputs) { //user sign up schema (post & put request)
     const schema = joi.object({
         userName: joi.string().alphanum().min(3).max(25).trim(true).required(),
         firstName: joi.string().alphanum().min(3).max(25).trim(true).required(),
@@ -12,9 +12,9 @@ function signUpSchema(input) { //user sign up schema (post & put request)
         is_active: joi.boolean().default(true),
         
     })
-    return schema.validate(input)
+    return schema.validate(inputs)
 }
-function userPutMethodSchema(input) { //user sign up schema (post & put request)
+function userPutMethodSchema(inputs) { //user sign up schema (post & put request)
     const schema = joi.object({
         userName: joi.string().alphanum().min(3).max(25).trim(true).required(),
         firstName: joi.string().alphanum().min(3).max(25).trim(true).required(),
@@ -22,7 +22,18 @@ function userPutMethodSchema(input) { //user sign up schema (post & put request)
         email: joi.string().email().trim(true).required(),
         mobileNumber: joi.string().length(11).pattern(/[6-9]{1}[0-9]{9}/).required(),
     })
-    return schema.validate(input)
+    return schema.validate(inputs)
 }
 
-module.exports = {signUpSchema,userPutMethodSchema}
+function productSchema (inputs){
+    const schema = joi.object ({
+        productName: joi.string().alphanum().min(3).max(25).trim(false).required(),
+        category: joi.string().alphanum().min(3).max(25).trim(false).required(),
+        availableQuantity: joi.number().default(1).min(0),
+        productPrice: joi.number().default(0).min(0).required(),
+        soldQuantity: joi.number().default(0).min(0),
+    })
+    return schema.validate(inputs)
+}
+
+module.exports = {signUpSchema,userPutMethodSchema,productSchema}

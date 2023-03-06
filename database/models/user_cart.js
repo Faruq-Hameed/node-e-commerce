@@ -5,9 +5,8 @@ const user_cart_schema = new mongoose.Schema({
         required : true,
     },
     userOrders: {
-        type: Array,
+        type: []        
     }
-   
 })
 const User_cart = mongoose.model('Wallet', user_cart_schema);
 module.exports = User_cart

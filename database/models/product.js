@@ -28,8 +28,10 @@ const schema = mongoose.Schema({
         required: true,
         default: 0,
         trim: false
-    }
-});
+    }    
+},
+{ timestamps: true }
+);
 
 const Products = mongoose.model('Product', schema);
 module.exports = Products;

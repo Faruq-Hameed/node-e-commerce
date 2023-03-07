@@ -86,10 +86,10 @@ router.put('/:userId/:productId', (req, res) => {
         return;
     }
      
-    const isNewProductNameExisting = async (product) => {
-        const productAlreadyExist = await doesProductExist_2(product, Products, validation.value, 'productName');
-        return productAlreadyExist
-    }
+    // const isNewProductNameExisting = async (product) => {
+    //     const productAlreadyExist = await doesProductExist_2(product, Products, validation.value, 'productName');
+    //     return productAlreadyExist
+    // }
     const updateProduct = async (product)=>{
         for (keys in validation.value) {
             if (key === 'availableQuantity'){
@@ -106,11 +106,12 @@ router.put('/:userId/:productId', (req, res) => {
             res.status(404).send({message: 'Product not found'})
             return
          }
-         const productNameAlreadyExit = await isNewProductNameExisting(product)
-         if (productNameAlreadyExit) { //if we already have user that matches the email,username or mobileNumber
-             res.status(productNameAlreadyExit.status).json({ message: productNameAlreadyExit.message })
-             return
-        };
+         
+        //  const productNameAlreadyExit = await isNewProductNameExisting(product)
+        //  if (productNameAlreadyExit) { //if we already have user that matches the email,username or mobileNumber
+        //      res.status(productNameAlreadyExit.status).json({ message: productNameAlreadyExit.message })
+        //      return
+        // };
 
         const updatedProduct = await updateProduct(product)
         res.status(200).send({message: 'product updated successfully', updatedProduct: updatedProduct})

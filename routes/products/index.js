@@ -3,7 +3,7 @@ const { products, users } = require("../../database")
 const router = express.Router()
 // const { getItem, getItemIndex } = require('../../modules')
 const { Products, User } = require('../../database/models')
-const { doesProductExist } = require('../../database')
+const { doesProductExist,doesProductExist_2 } = require('../../database')
 const { productSchema } = require('../../utils/input_schema')
 const { paginate, paginationError } = require('../../utils');
 
@@ -66,7 +66,7 @@ router.post('/:userId', (req, res) => {
         }
     }
     const main = async () =>{
-        const isAdmin = await getUserById()
+        const isAdmin = await getUserById(req)
         if (!isAdmin || isAdmin.userName !== 'admin'){
             res.status(401).send({message: 'unauthorized user'}); 
             return;
@@ -85,35 +85,39 @@ router.put('/:userId/:productId', (req, res) => {
         res.status(422).send(validation.error.details[0].message);
         return;
     }
-    const updateTheProduct = async () => {
-        const productAlreadyExist = doesProductExist(Products, validation.value, 'productName');
-        if (productAlreadyExist) { //if we already have user that matches the email,username or mobileNumber
-            return res.status(itemExist.status).json({ message: itemExist.message })
+     
+    const isNewProductNameExisting = async (product) => {
+        const productAlreadyExist = await doesProductExist_2(product, Products, validation.value, 'productName');
+        return productAlreadyExist
+    }
+    const updateProduct = async (product)=>{
+        for (keys in validation.value) {
+            if (key === 'availableQuantity'){
+                product.availableQuantity += validation.value.quantity
+            }
+            else product[keys] = validation.value[keys]
+        }
+        await product.save()
+        return product
+    }
+    const startOperation = async ()=>{ 
+         const product = await getProductById(req)
+         if(!product){
+            res.status(404).send({message: 'Product not found'})
+            return
+         }
+         const productNameAlreadyExit = await isNewProductNameExisting(product)
+         if (productNameAlreadyExit) { //if we already have user that matches the email,username or mobileNumber
+             res.status(productNameAlreadyExit.status).json({ message: productNameAlreadyExit.message })
+             return
         };
+
+        const updatedProduct = await updateProduct(product)
+        res.status(200).send({message: 'product updated successfully', updatedProduct: updatedProduct})
 
     }
 
-
-    //     const product = getItem(products, "productId", req.params.productId) // to get the product if it exists
-    //     if (product) {
-    //         const productIndex = getItemIndex(products, "productId", req.params.productId);
-
-    //         const updatedProduct = req.body
-    //         updatedProduct.productId = product.productId
-    //         updatedProduct.productQty = (product.productQty > 0) ? product.productQty + req.body.quantity : req.body.quantity
-    //         delete req.body.quantity
-
-    //         products.splice(productIndex, 1, updatedProduct)
-    //         res.status(200).json({ 'updated product': updatedProduct })
-    //     }
-    //     else { // if the product doesn't exist /// \\\\*** needed to be updated for possible errors
-    //         const newProduct = req.body
-    //         newProduct.productId = 'p' + (products.length + 1)
-    //         newProduct.productQty = req.body.quantity
-    //         delete req.body.quantity
-    //         products.push(newProduct)
-    //         res.status(201).end(`new product created with ${newProduct.productId}`)
-    //     }
+    startOperation()    
 })
 
 router.patch('/:userId.:productId', (req, res) => {
@@ -144,9 +148,14 @@ router.delete('/:userId/:productId', (req, res) => {
 })
 
 //needed to check if a user is allowed to access some routes(meant for admin only)
-const getUserById = async () => {
+const getUserById = async (req) => {
     const isAdmin = await User.findById(req.params.userId);
     return isAdmin
+}
+
+const getProductById = async (req) => {
+    const product = await Products.findById(req.params.productId);
+    return product
 }
 
 module.exports = router

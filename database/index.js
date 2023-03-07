@@ -134,8 +134,8 @@ const allUsersOrders = [
 
 const {db_connection, URI} = require('./mongoDb')
 const { securePassword } = require('./password')
-const { doesUserExist,doesUserInfoExist,doesProductExist } = require('./existErrors')
+const { doesUserExist,doesUserInfoExist,doesProductExist,doesProductExist_2 } = require('./existErrors')
 
 module.exports = {products, users, allUsersOrders,db_connection,URI,securePassword, 
-    doesUserExist,doesUserInfoExist, doesProductExist }
+    doesUserExist,doesUserInfoExist, doesProductExist, doesProductExist_2 }
 

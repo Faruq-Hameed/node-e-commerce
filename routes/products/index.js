@@ -85,40 +85,32 @@ router.put('/:userId/:productId', (req, res) => {
         res.status(422).send(validation.error.details[0].message);
         return;
     }
-     
-    // const isNewProductNameExisting = async (product) => {
-    //     const productAlreadyExist = await doesProductExist_2(product, Products, validation.value, 'productName');
-    //     return productAlreadyExist
-    // }
-    const updateProduct = async (product)=>{
-        for (keys in validation.value) {
-            if (key === 'availableQuantity'){
-                product.availableQuantity += validation.value.quantity
-            }
-            else product[keys] = validation.value[keys]
+    const productNameAlreadyExist = async () => {
+        const product = await Products.findById(req.params.productId);
+        const result = await doesProductExist_2(product, Products, validation.value)
+        return result
+    }
+    const updateProduct = async () => {
+        const product = await Products.findById(req.params.productId);
+
+           for (keys in validation.value) {
+            product[keys] = validation.value[keys]}
+            await product.save()
+
+            return res.status(200).send({message: 'updated product successfully', product: product})
         }
-        await product.save()
-        return product
-    }
-    const startOperation = async ()=>{ 
-         const product = await getProductById(req)
-         if(!product){
-            res.status(404).send({message: 'Product not found'})
+    
+    const startProcess = async () => {
+        const nameErr = await productNameAlreadyExist()
+        if (nameErr){
+            res.status(nameErr.status).send({message: nameErr.message})
             return
-         }
-         
-        //  const productNameAlreadyExit = await isNewProductNameExisting(product)
-        //  if (productNameAlreadyExit) { //if we already have user that matches the email,username or mobileNumber
-        //      res.status(productNameAlreadyExit.status).json({ message: productNameAlreadyExit.message })
-        //      return
-        // };
-
-        const updatedProduct = await updateProduct(product)
-        res.status(200).send({message: 'product updated successfully', updatedProduct: updatedProduct})
-
+        }
+        updateProduct()
     }
 
-    startOperation()    
+    startProcess()
+
 })
 
 router.patch('/:userId.:productId', (req, res) => {

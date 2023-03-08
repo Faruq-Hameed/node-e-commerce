@@ -79,34 +79,52 @@ router.post('/:userId', (req, res) => {
 })
 
 router.put('/:userId/:productId', (req, res) => {
-
+// validating the data input
     const validation = productSchema(req.body)
     if (validation.error) {
         res.status(422).send(validation.error.details[0].message);
         return;
     }
+    //checking if the new product has already been used by another product
     const productNameAlreadyExist = async () => {
         const product = await Products.findById(req.params.productId);
         const result = await doesProductExist_2(product, Products, validation.value)
         return result
     }
+
+    //update product with the new values from validation if no errors
     const updateProduct = async () => {
         const product = await Products.findById(req.params.productId);
-
-           for (keys in validation.value) {
-            product[keys] = validation.value[keys]}
-            await product.save()
-
+        product.availableQuantity += validation.value.availableQuantity;
+         delete validation.value.availableQuantity; //after it is been updated so it can be in the loop
+           
+        for (keys in validation.value) {
+            product[keys] = validation.value[keys]
+        }
+        await product.save()
             return res.status(200).send({message: 'updated product successfully', product: product})
         }
-    
+
+    //calling the created functions and create a new product if it doesn't exist
     const startProcess = async () => {
-        const nameErr = await productNameAlreadyExist()
-        if (nameErr){
-            res.status(nameErr.status).send({message: nameErr.message})
-            return
+        try {
+            const product = await Products.findById(req.params.productId);
+            const nameErr = await productNameAlreadyExist()
+            if (nameErr) {
+                console.error({nameErr});
+                res.status(nameErr.status).send({ message: nameErr.message })
+                return
+            }
+            await updateProduct()
+            
         }
-        updateProduct()
+        catch (err) {
+            { //if the product id and name does not exist
+                const newProduct = await Products.create(validation.value)
+                res.status(200).send({ message: 'new product added successfully', newProduct })
+                return
+            }
+        }
     }
 
     startProcess()

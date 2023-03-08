@@ -31,7 +31,7 @@ function productSchema (inputs){
         category: joi.string().alphanum().min(3).max(25).trim(false).required(),
         availableQuantity: joi.number().default(1).min(0),
         productPrice: joi.number().default(0).min(0).required(),
-        soldQuantity: joi.number().default(0).min(0),
+        soldQuantity: joi.number().min(0),
     })
     return schema.validate(inputs)
 }

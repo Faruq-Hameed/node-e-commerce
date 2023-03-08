@@ -25,7 +25,6 @@ const schema = mongoose.Schema({
     },
     soldQuantity: {
         type: Number,
-        required: true,
         default: 0,
         trim: false
     }    

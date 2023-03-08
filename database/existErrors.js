@@ -49,10 +49,12 @@ const doesProductExist = async (model, value, productName) => {
 }
 
 const doesProductExist_2 = async (product,model, value) => {
-    const doesProductNameExist = await model.findOne({ productName: value.productName })
-    if (doesProductNameExist && doesProductNameExist._id !== product._id) {
+    const doesProductExist = await model.findOne({ productName: value.productName })
+    if (doesProductExist && doesProductExist._id !== product._id) {
+        console.log(doesProductExist && doesProductExist._id !== product._id)
         let result = { status: 409, message: 'new product name already exists' }
         return result;
     }
+    else return false;
 }
 module.exports = { doesUserExist, doesUserInfoExist , doesProductExist,doesProductExist_2}

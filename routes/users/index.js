@@ -122,7 +122,7 @@ router.put('/:userId', (req, res) => {
             for (keys in validation.value) {
                 user[keys] = validation.value[keys]
             }
-
+            user.save()
             return res.status(200).send({ user })
         }
         catch (err) {

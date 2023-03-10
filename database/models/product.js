@@ -11,6 +11,14 @@ const schema = mongoose.Schema({
         required: true,
         trim: false,
     },
+    description: {
+        type: String,
+        required: true
+      },
+      maker: {
+        type: String,
+        required: true
+      },
     availableQuantity: {
         type: Number,
         required: true,

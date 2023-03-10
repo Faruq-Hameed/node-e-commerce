@@ -4,9 +4,10 @@ const router = express.Router()
 // const { getItem, getItemIndex } = require('../../modules')
 const { Products, User } = require('../../database/models')
 const { doesProductExist,doesProductExist_2 } = require('../../database')
-const { productSchema } = require('../../utils/input_schema')
+const { productSchema,productUpdateSchema } = require('../../utils/input_schema')
 const { paginate, paginationError } = require('../../utils');
 const { response } = require('express');
+
 
 
 router.get('/', (req, res) => { ///****** needed adjustment. Anyone should have access to this */
@@ -20,7 +21,7 @@ router.get('/', (req, res) => { ///****** needed adjustment. Anyone should have 
                 res.status(error.status).json({ message: error.message })
                 return;
             }
-            const paginatedProductsList = paginate(allProducts, req)
+            const paginatedProductsList = paginate(allProducts, req, 'products')
             res.status(200).json(paginatedProductsList)
         }
         catch (err) {
@@ -29,6 +30,29 @@ router.get('/', (req, res) => { ///****** needed adjustment. Anyone should have 
     }
     getAllProducts()
 })
+
+// searching for products with matching query parameters
+router.get('/search/', (req, res, next) => {
+    if(req.params.productId){
+        return next('route'); 
+    }
+    const getProductsByQuery = async () => {
+        try{
+            const value = (req.query.maker)
+            ? { maker: req.query.maker } : (req.query.productName)
+                ? { productName: req.query.productName } : (req.query.category)
+                    ? { category: req.query.category } : false
+            const products = await Products.find(value)
+          return  res.status(200).send({ products }) 
+        }
+
+        catch (err) {
+        }
+        return res.status(404).send({ message: 'no match found' }) 
+    }
+    getProductsByQuery()
+})
+
 
 router.get('/:id', (req, res) => {
     const getProductById = async () => {
@@ -45,40 +69,34 @@ router.get('/:id', (req, res) => {
     getProductById()
 })
 
-//only admin user should have the permissions to do everything in this post request;
+
+
+//only admin user should have the permissions to do everything below;
+router.use('/:userId',(req, res, next) => {
+    const admin = { id: process.env.adminId, name: process.env.adminName }
+    console.log(req.params.userId)
+    if (req.params.userId && req.params.userId === admin.id) {
+        return next()
+    }
+    res.status(401).send({ message: 'unauthorized user' })
+})
+
 router.post('/:userId', (req, res) => {
     const validation = productSchema(req.body)
     if (validation.error) {
         res.status(422).send(validation.error.details[0].message);
         return;
     }
-
     const createNewProduct = async () => {
-
         try {
-            const productAlreadyExist = await doesProductExist(Products, validation.value, 'productName');
-            if (productAlreadyExist) { //if we already have product that matches the new Product name
-                return res.status(productAlreadyExist.status).json({ message: productAlreadyExist.message })
-            };
-
             const newProduct = await Products.create(validation.value)
             res.status(200).send({ message: 'new product added successfully', newProduct })
         }
         catch (err) {
             res.status(400).send(err.message);
-
         }
     }
-    const main = async () => {
-        const isAdmin = await getUserById(req)
-        if (!isAdmin || isAdmin.userName !== 'admin') {
-            res.status(401).send({ message: 'unauthorized user' });
-            return;
-        }
-        // if the user is an admin, then the product update will proceed
         createNewProduct()
-    }
-    main()
 
 })
 
@@ -90,13 +108,12 @@ router.put('/:userId/:productId', (req, res) => {
         return;
     }
 
-
     //update product with the new values from validation if no errors
     const updateProduct = async () => {
         const product = await Products.findById(req.params.productId);
 
         product.availableQuantity += validation.value.availableQuantity;
-        delete validation.value.availableQuantity; //after it is been updated so it can be in the loop
+        delete validation.value.availableQuantity; //after it is been updated so it wont be in the loop
 
         for (keys in validation.value) {
             product[keys] = validation.value[keys]
@@ -126,31 +143,53 @@ router.put('/:userId/:productId', (req, res) => {
 
 })
 
-router.patch('/:userId.:productId', (req, res) => {
-    if (!req.body.quantity) return res.status(404).send('no input found to update');
-    if (req.params.userId !== 'u1') return res.status(401).json('unauthorized user') // if user is not an admin   
+router.patch('/:userId/:productId', (req, res) => {
+     // validating the data input
+     const validation = productUpdateSchema(req.body)
+     if (validation.error) {
+         res.status(422).send(validation.error.details[0].message);
+         return;
+     }
 
-    const product = getItem(products, "productId", req.params.productId)
+        //update product with the new values from validation if no errors
+    const updateProduct = async () => {
+        try{
+            const product = await Products.findById(req.params.productId);
 
-    if (!product) return res.status(404).send('product not found to update') //if productId doesn't exist
+            product.availableQuantity += validation.value.quantity
+            delete validation.value.availableQuantity; //after it is been updated so it wont be in the loop
 
-    for (value in req.body) {
-        if (value === 'quantity') {
-            product.productQty = req.body.quantity
+            for (keys in validation.value) {
+                product[keys] = validation.value[keys]
+            }
+            await product.save()
+            return res.status(200).send({ message: 'updated product successfully', product: product })
         }
-        product[value] = req.body[value]
+        //error response
+        catch (err) {
+            res.status(404).send({ message: 'product not found to update' })
+        }
     }
-    res.status(200).json({ 'update successful': product })
+    updateProduct()
+
 })
 
 router.delete('/:userId/:productId', (req, res) => {
-    if (req.params.userId !== 'u1') return res.status(401).end('unauthorized user')
-    const productIndex = getItemIndex(products, "productId", req.params.productId)
-
-    if (productIndex < 0) return res.status(404).end('product not found')
-
-    products.splice(productIndex, 1)
-    res.status(200).end('successfully delete')
+    const deleteProduct = async () => {
+        try {
+            const product = await Products.findByIdAndDelete(req.params.productId);
+            if (!product) {
+                res.status(410).send({ message: "Product has already deleted" }) //incase null was returned
+                return
+            }
+            res.status(200).send({ message: 'Product deleted successfully' })
+            
+        }
+        catch (err) {
+            res.status(404).send({ message: 'product not found to delete' })
+        }
+    }
+    deleteProduct()
 })
 
 //needed to check if a user is allowed to access some routes(meant for admin only)

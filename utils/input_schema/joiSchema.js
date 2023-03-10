@@ -27,7 +27,9 @@ function userPutMethodSchema(inputs) { //user sign up schema (post & put request
 
 function productSchema (inputs){
     const schema = joi.object ({
-        productName: joi.string().alphanum().min(3).max(25).trim(false).required(),
+        productName: joi.string().min(3).max(25).trim(false).required(),
+        maker: joi.string().min(3).max(200).trim(false).required(),
+        description : joi.string().min(3).max(200).trim(false).required(),
         category: joi.string().alphanum().min(3).max(25).trim(false).required(),
         availableQuantity: joi.number().default(1).min(0),
         productPrice: joi.number().default(0).min(0).required(),
@@ -36,4 +38,16 @@ function productSchema (inputs){
     return schema.validate(inputs)
 }
 
-module.exports = {signUpSchema,userPutMethodSchema,productSchema}
+function productUpdateSchema (inputs){
+    const schema = joi.object ({
+        productName: joi.string().min(3).max(25).trim(false),
+        maker: joi.string().min(3).max(200).trim(false),
+        description : joi.string().min(3).max(200).trim(false),
+        category: joi.string().min(3).max(25).trim(false),
+        quantity: joi.number().default(0).min(0),
+        productPrice: joi.number().min(0),
+    })
+    return schema.validate(inputs)
+}
+
+module.exports = {signUpSchema,userPutMethodSchema,productSchema,productUpdateSchema}

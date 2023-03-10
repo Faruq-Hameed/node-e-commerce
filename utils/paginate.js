@@ -38,7 +38,7 @@ function paginationError(array,req){
 
 }
 
-function paginate(array, req) {
+function paginate(array, req, items) {
     const validation = schema(req.query)
 
     const { page, limit } = validation.value  //using the validated input from the schema
@@ -67,7 +67,7 @@ function paginate(array, req) {
 
     result.limit = limit //limit as specified in the request. The maximum number of items per page 
 
-    result.usersList = array.slice(startIndex, endIndex)//returning the specified portion of the users array
+    result[items + 'List'] = array.slice(startIndex, endIndex)//returning the specified portion of the users array
     return result
 
 }

@@ -25,11 +25,6 @@ function paginationError(array,req){
     const { page, limit } = validation.value  //using the validated input from the schema
 
     // incase the client is requesting for an exceeded limit or page number
-    if(limit > array.length){
-
-        let response = { status: 404, message: `you have exceeded the maximum limit of ${Math.ceil(array.length)}`}
-        return response;
-    }
 
     if(page >Math.ceil(array.length / limit)){
         let response = { status: 404, message: `you have exceeded the maximum page of ${Math.ceil(array.length / limit)}`}

@@ -9,49 +9,41 @@ const { paginate, paginationError } = require('../../utils');
 const { response } = require('express');
 
 
-
-router.get('/', (req, res) => { ///****** needed adjustment. Anyone should have access to this */
-    async function getAllProducts() {
-        try {
-            const allProducts = await Products.find({})
-
-            //paginating the results to be returned to the user
-            const error = paginationError(allProducts, req)
-            if (error) {
-                res.status(error.status).json({ message: error.message })
-                return;
-            }
-            const paginatedProductsList = paginate(allProducts, req, 'products')
-            res.status(200).json(paginatedProductsList)
-        }
-        catch (err) {
-            res.status(500).json({ message: err.message });
-        }
-    }
-    getAllProducts()
-})
-
-// searching for products with matching query parameters
-router.get('/search/', (req, res, next) => {
-    if(req.params.productId){
-        return next('route'); 
-    }
+router.get('/', (req, res, next) => {
     const getProductsByQuery = async () => {
-        try{
+        try {
+            // the search parameters are to be passed by the user and are optional
             const value = (req.query.maker)
-            ? { maker: req.query.maker } : (req.query.productName)
-                ? { productName: req.query.productName } : (req.query.category)
-                    ? { category: req.query.category } : false
-            const products = await Products.find(value)
-          return  res.status(200).send({ products }) 
-        }
+                ? { maker: req.query.maker } : (req.query.productName)
+                    ? { productName: req.query.productName } : (req.query.category)
+                        ? { category: req.query.category } : {}
 
-        catch (err) {
+            const products = await Products.find(value) //all products will be returned if no query is provided
+            req.query.products = products //needed to pass to the next middleware function
+            return next() //pass the req to the next middleware function
         }
-        return res.status(404).send({ message: 'no match found' }) 
+        catch (err) {
+            return res.status(404).send({ message: 'no match found' })
+        }
     }
     getProductsByQuery()
-})
+
+},
+    // middleware needed for pagination of results to be returned
+    (req, res) => {
+        const { limit, page, products } = req.query
+        req.query = {} //to delete all the query parameters that were passed to the middleware
+        req.query = { limit, page } //setting these values to be used for pagination validation and operations
+        const error = paginationError(products, req)
+        if (error) {
+            res.status(error.status).json({ message: error.message })
+            return;
+        }
+        const paginatedProductsList = paginate(products, req, 'products')
+        res.status(200).json(paginatedProductsList)
+        return
+    }
+)
 
 
 router.get('/:id', (req, res) => {
@@ -68,8 +60,6 @@ router.get('/:id', (req, res) => {
     }
     getProductById()
 })
-
-
 
 //only admin user should have the permissions to do everything below;
 router.use('/:userId',(req, res, next) => {

@@ -4,13 +4,45 @@ const user_cart_schema = new mongoose.Schema({
         type : String,
         required : true,
     },
-    userOrders: {
-        type: []        
+    userCartItems: {
+        type: [{
+            
+        }]     
     }
 })
 const User_cart = mongoose.model('Wallet', user_cart_schema);
 module.exports = User_cart
 
+
+const cartSchema = new mongoose.Schema({
+    owner: {
+        type: ObjectID,
+        required: true,
+        ref: 'User'
+    },
+    items: [{
+        itemId: {
+            type: ObjectID,
+            ref: 'Item',
+            required: true
+        },
+        name: String,
+        quantity: {
+            type: Number,
+            required: true,
+            min: 1,
+            default: 1
+        },
+        price: Number
+    }],
+    bill: {
+        type: Number,
+        required: true,
+        default: 0
+    }
+}, {
+    timestamps: true
+})
 // const allUsersOrders = [
 //     {
 //         userId: 'u1',

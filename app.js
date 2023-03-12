@@ -3,7 +3,7 @@ const morgan = require('morgan');
 const helmet = require('helmet');
 
 const {db_connection,URI} = require('./database')
-const {users, products, order, payment, wallet} = require('./routes')
+const {users, items, order, payment, wallet} = require('./routes')
 
 
 require('dotenv').config({path: './.env'})
@@ -27,7 +27,7 @@ app.use(helmet())
 
 
 app.use('/api/users', users)
-app.use('/api/products', products)
+app.use('/api/items', items)
 app.use('/api/orders', order)
 app.use('/api/payments', payment)
 app.use('/api/wallet', wallet)

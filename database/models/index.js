@@ -1,6 +1,6 @@
 const Password = require('./password');
 const User = require('./user');
-const Products = require('./product');
+const Item = require('./item');
 const Wallet = require('./wallet');
 
-module.exports = {Password, User,Wallet, Products}
+module.exports = {Password, User,Wallet, Item}

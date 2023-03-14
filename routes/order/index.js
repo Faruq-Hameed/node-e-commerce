@@ -1,12 +1,14 @@
 const express = require('express')
-const { products, users, allUsersOrders } = require("../../database")
-const {getUser, getUserIndex, getItem} = require('../../modules') 
+// const { products, users, allUsersOrders } = require("../../database")
+// const {getUser, getUserIndex, getItem} = require('../../modules') 
+const { Item, User,User_Cart } = require('../../database/models')
+const { itemSchema,itemUpdateSchema } = require('../../utils/input_schema')
+const { paginate, paginationError } = require('../../utils');
+
+const router = express.Router()
 
 
-const orderRouter = express.Router()
-
-
-orderRouter.get('/:userId', (req, res) => {
+router.get('/:userId', (req, res) => {
     const user = getUser(users, req.params.userId)
     if (!user) return res.status(401).send('unknown user')
 
@@ -26,7 +28,7 @@ orderRouter.get('/:userId', (req, res) => {
 })
 
 //getting a specific order information for a given userId with the orderId
-orderRouter.get('/:userId/:orderId', (req, res) => {
+router.get('/:userId/:orderId', (req, res) => {
     const getOrderInfo = allUsersOrders.find(user => user.userOrders //getting the order by the order id
         .find(order => order.orderId === req.params.orderId))
     if (!getOrderInfo) return res.status(404).send('unknown request. The order doesn\'t exist');   
@@ -42,7 +44,7 @@ orderRouter.get('/:userId/:orderId', (req, res) => {
 })
 
 
-orderRouter.post('/', (req, res) => {
+router.post('/', (req, res) => {
     const product = getItem(products, "productId", req.body.productId)
     const currentUserOrder = getUser(allUsersOrders, req.body.userId)
 
@@ -64,7 +66,7 @@ orderRouter.post('/', (req, res) => {
 
 })
 
-orderRouter.put('/:userId/:orderId', (req, res) => {
+router.put('/:userId/:orderId', (req, res) => {
     // getting the user entire cart detail from all users carts in store(database)
     const currentUserOrder = getUser(allUsersOrders, req.params.userId)
     if (!currentUserOrder) return  res.status(401).send('unknown user'); 
@@ -95,7 +97,7 @@ orderRouter.put('/:userId/:orderId', (req, res) => {
 })
 
 
-orderRouter.delete('/:userId/:orderId', (req, res) => {
+router.delete('/:userId/:orderId', (req, res) => {
     const getOrderInfo = allUsersOrders.find(user => user.userOrders
         .find(order => order.orderId === req.params.orderId))
     if (!getOrderInfo) return res.status(404).send('unknown request. The order doesn\'t exist');   
@@ -113,4 +115,4 @@ orderRouter.delete('/:userId/:orderId', (req, res) => {
     res.status(201).end('order successfully deleted');
 
 })
-module.exports = orderRouter;
+module.exports = router;

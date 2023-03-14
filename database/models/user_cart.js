@@ -1,19 +1,4 @@
 const mongoose = require ('mongoose')
-const user_cart_schema = new mongoose.Schema({
-    user_id: {
-        type : String,
-        required : true,
-    },
-    userCartItems: {
-        type: [{
-            
-        }]     
-    }
-})
-const User_cart = mongoose.model('Wallet', user_cart_schema);
-module.exports = User_cart
-
-
 const cartSchema = new mongoose.Schema({
     owner: {
         type: ObjectID,
@@ -43,6 +28,13 @@ const cartSchema = new mongoose.Schema({
 }, {
     timestamps: true
 })
+
+
+const User_cart = mongoose.model('Wallet', cartSchema);
+module.exports = User_cart
+
+
+
 // const allUsersOrders = [
 //     {
 //         userId: 'u1',

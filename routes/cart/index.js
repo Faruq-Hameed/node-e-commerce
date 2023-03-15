@@ -1,8 +1,8 @@
 const express = require('express')
 // const { products, users, allUsersOrders } = require("../../database")
 // const {getUser, getUserIndex, getItem} = require('../../modules') 
-const { Item, User,User_Cart } = require('../../database/models')
-const { itemSchema,itemUpdateSchema } = require('../../utils/input_schema')
+const { Item, User,Cart } = require('../../database/models')
+const { itemSchema,itemUpdateSchema,cartSchema } = require('../../utils/input_schema')
 const { paginate, paginationError } = require('../../utils');
 
 const router = express.Router()
@@ -45,24 +45,54 @@ router.get('/:userId/:orderId', (req, res) => {
 
 
 router.post('/', (req, res) => {
-    const product = getItem(products, "productId", req.body.productId)
-    const currentUserOrder = getUser(allUsersOrders, req.body.userId)
+    const validation = cartSchema(req.body)
+    if (validation.error) {
+        res.status(422).send(validation.error.details[0].message);
+        return;
+    }
+    const addItemToCart= async ()=>{
+        try{
+            const userCart = await Cart.findOne({_id: req.body._id})
+            const item = await Item.findById(req.body.itemId)
+            if (!userCart) {
+                res.status(401).send('kindly sign in or register to make an order')
+                return;
+            }
+            if (!item) {
+                res.status(404).send('product not found or out of stock')
+                return;
+            }
+            const newItemToAddToCart = {//initiating the new item object to be added to the cart 
+                itemId: item._id, name: item.name,
+                quantity: validation.value.quantity, price: item.price
+            }
+            const valueOfTheNewItemToAddToCart = newItemToAddToCart.quantity * newItemToAddToCart.price;
+            userCart.items.push(newItemToAddToCart) //adding the item to document array
+            userCart.bill += valueOfTheNewItemToAddToCart //updating the user bill with the newly added item value
+            await userCart.save()
+            res
+                .status(200)
+                .json({ message: "new item added to cart", itemSummary: newItemToAddToCart, value: valueOfTheNewItemToAddToCart })
+        }
+        catch (err){
+            res.status(404).json(err.message)
+            return;
+        }
+    }
+    addItemToCart()
 
-    if (!currentUserOrder) return res.status(401).send('kindly sign in or register to make an order')
-    if (!product || product.productQty === 0) return res.status(404).send('product not found or out of stock')
-    if (!req.body.quantity || parseInt(req.body.quantity) * 0 !== 0) return res.status(404).send('provide a valid quantity')
-    if(parseInt(req.body.quantity) > product.productQty) return res.status(400).send(`we only have ${product.productQty}kg in stock`)
+    // if (!req.body.quantity || parseInt(req.body.quantity) * 0 !== 0) return res.status(404).send('provide a valid quantity')
+    // if(parseInt(req.body.quantity) > product.productQty) return res.status(400).send(`we only have ${product.productQty}kg in stock`)
     
-        const newOrder = {} //initiating an empty order object
-        newOrder.orderId = req.body.userId + 'Or' + (currentUserOrder.userOrders.length + 1)
-        newOrder.productId = req.body.productId
-        newOrder.orderQty = parseInt(req.body.quantity)
-        newOrder.orderValue = parseInt(req.body.quantity) * parseInt(product.pricePerUnit)
+    //     newOrder.orderId = req.body.userId + 'Or' + (currentUserOrder.userOrders.length + 1)
+    //     newOrder.productId = req.body.productId
+    //     newOrder.orderQty = parseInt(req.body.quantity)
+    //     newOrder.orderValue = parseInt(req.body.quantity) * parseInt(product.pricePerUnit)
 
-        currentUserOrder.userOrders.push(newOrder) //adding the new order to the user Order in the database
-        product.productQty = product.productQty - newOrder.orderQty // subtracting the product from the stock value in the database
-        product.soldQty = product.soldQty + newOrder.orderQty //updating the product sold in the database
-        res.status(200).send({ newOrder: newOrder })
+    //     currentUserOrder.userOrders.push(newOrder) //adding the new order to the user Order in the database
+    //     product.productQty = product.productQty - newOrder.orderQty // subtracting the product from the stock value in the database
+    //     product.soldQty = product.soldQty + newOrder.orderQty //updating the product sold in the database
+    //     res.status(200).send({ newOrder: newOrder })
 
 })
 

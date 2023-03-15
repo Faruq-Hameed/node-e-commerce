@@ -1,5 +1,5 @@
 const express = require('express'); 
-const { Password, User, Products } = require('../../database/models')
+const { Password, User,Cart } = require('../../database/models')
 const { securePassword, doesUserExist,doesUserInfoExist } = require('../../database')
 const { signUpSchema,userPutMethodSchema } = require('../../utils/input_schema')
 const {paginate, paginationError} = require('../../utils');
@@ -80,13 +80,12 @@ router.post('/', (req, res) => {
 
             //storing the validated objects to the database
             const newUser = await User.create(validation.value);
-
+            const newUserCart = await Cart.create({_id: newUser._id})
             const password = await Password.create({
                 password: await securePassword(validation.value.password),
                 user_id: newUser._id
             })
-
-            res.status(200).json({ userSummary: newUser, password: password });
+            res.status(200).json({ userSummary: newUser, password: password, newUserCart: newUserCart });
         }
         catch (err) {
             res.status(400).send(err.message);

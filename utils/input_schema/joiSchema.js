@@ -50,4 +50,13 @@ function itemUpdateSchema (inputs){
     return schema.validate(inputs)
 }
 
-module.exports = {signUpSchema,userPutMethodSchema,itemSchema,itemUpdateSchema}
+function cartSchema(inputs) {
+    const schema = joi.object({
+        _id: joi.string().required(),
+        itemId: joi.string().required(),
+        quantity: joi.number().default(1).min(0)
+    })
+    return schema.validate(inputs)
+}
+
+module.exports = {signUpSchema,userPutMethodSchema,itemSchema,itemUpdateSchema,cartSchema}

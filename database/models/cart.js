@@ -1,15 +1,16 @@
 const mongoose = require ('mongoose')
 const cartSchema = new mongoose.Schema({
-    owner: {
-        type: ObjectID,
+    _id: {
+        type: mongoose.ObjectId,
         required: true,
         ref: 'User'
     },
     items: [{
         itemId: {
-            type: ObjectID,
+            type: mongoose.ObjectId,
             ref: 'Item',
-            required: true
+            required: true,
+            
         },
         name: String,
         quantity: {
@@ -18,20 +19,21 @@ const cartSchema = new mongoose.Schema({
             min: 1,
             default: 1
         },
-        price: Number
+        price: Number,
+        // default: undefined
     }],
     bill: {
         type: Number,
         required: true,
         default: 0
-    }
+    },
 }, {
     timestamps: true
 })
 
 
-const User_cart = mongoose.model('Wallet', cartSchema);
-module.exports = User_cart
+const Cart = mongoose.model('cart', cartSchema);
+module.exports = Cart
 
 
 

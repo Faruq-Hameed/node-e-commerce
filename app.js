@@ -13,7 +13,7 @@ const app = express();
 
 db_connection()
     .then(result => {
-        console.log('connected to database:', URI)
+        console.log('connected to database successfully')
     }).catch(err => {
         console.log('error connecting to database:', err.message)
         process.exit(1)
@@ -36,8 +36,8 @@ app.use('/static',express.static('./public')) //added virtual prefix('/static'. 
 
 app.get('/', (req, res)=>{
 
-    res.render('index')
-    // res.status(200).send("<h1>Hello world</h1>")
+    // res.render('index')
+    res.status(200).send("<h1>Hello world</h1>")
 })
 
 //handling all unknown url requests.

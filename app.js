@@ -32,10 +32,14 @@ app.use(helmet());
 //     origin: 'https://www.section.io'
 // }));
 
+// app.use(cors({
+//     origin: '*'
+// }));
 /**allow more than one cross-origin-request-sharing(CORS) */
 app.use(
   cors({
-    origin: ["https://www.section.io", "https://www.google.com/"],
+    methods: [,'POST','DELETE','UPDATE','PUT','PATCH'],
+    origin: ["https://www.section.io", "https://www.google.com/"]
   })
 );
 app.use("/api/users", users);

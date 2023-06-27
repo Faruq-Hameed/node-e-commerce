@@ -1,37 +1,47 @@
-const express = require("express");
-const { Password, User, Cart } = require("../../database/models");
+const router = require("express").Router();
+const { User, Cart } = require("../db/models");
+//import all the modules in the utils folder
 const {
-  securePassword,
   doesUserExist,
   doesUserInfoExist,
-} = require("../../database");
-const {
   signUpSchema,
   userPutMethodSchema,
-} = require("../utils/input_schema");
-const { paginate, paginationError } = require("../utils");
+  paginate,
+  paginationError,
+} = require("../utils/");
 
-const router = express.Router();
-
-router.get("/", (req, res) => {
-  async function getAllUsers() {
-    try {
-      const allUsers = await User.find({});
-
-      //paginating the results to be returned to the user
-      const error = paginationError(allUsers, req);
-      if (error) {
-        res.status(error.status).json({ message: error.message });
-        return;
-      }
-      const paginatedUsersList = paginate(allUsers, req);
-      res.status(200).json(paginatedUsersList);
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+/**Get all users controller */
+const getAllUsers = async (req, res) => {
+  try {
+    for (let i = 1; i < 20; i++) {
+User.create({
+  email: `user${i}@example.com`,
+        userName: `user${i}`,
+        firstName: `fName${i}`,
+        lastName: `lName${i}`,
+        mobileNumber: `${i}234567`,
+        password: "password",
+        birthYear: `1905`
+})
     }
+    const limit = 1 * req.query.limit; //to ensure an integer is returned
+    const allUsers = await User.find({}).limit(limit);
+
+    // //paginating the results to be returned to the user
+    // const error = paginationError(allUsers, req);
+    // if (error) {
+    //   res.status(error.status).json({ message: error.message });
+    //   return;
+    // }
+    // const paginatedUsersList = paginate(allUsers, req);
+
+    res.status(200).json(allUsers);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
   }
-  getAllUsers();
-});
+};
+
+module.exports = getAllUsers
 
 router.get("/:userId", (req, res) => {
   const getUserById = async () => {
@@ -179,4 +189,4 @@ router.delete("/:userId", (req, res) => {
   // res.status(200).send("delete successfully, your cart is emptied we hope to see you again")
 });
 
-module.exports = router;
+// module.exports = router;

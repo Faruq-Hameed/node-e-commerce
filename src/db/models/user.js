@@ -1,5 +1,5 @@
 const mongoose = require("mongoose");
-const userSchema = new mongoose.Schema(
+const UserSchema = new mongoose.Schema(
 {
 	userName: {
 		type: String,
@@ -32,6 +32,11 @@ const userSchema = new mongoose.Schema(
 		max: 2000,
 		min: 1900,
 	},
+	password :{
+		type: String,
+		min: 6,
+		required: true,
+	},
 	is_active: {
 		type: Boolean,
 		default: true,
@@ -41,7 +46,7 @@ const userSchema = new mongoose.Schema(
 );
 
 // Hash the password before saving
-userSchema.pre("save", async function (next) {
+UserSchema.pre("save", async function (next) {
 	if (!this.isModified("password")) {
 	  next();
 	}
@@ -56,12 +61,12 @@ userSchema.pre("save", async function (next) {
 	}
   });
   
-  userSchema.methods.comparePassword = async function (candidatePassword) {
+  UserSchema.methods.comparePassword = async function (candidatePassword) {
 	const isMatch = await bcrypt.compare(candidatePassword, this.password);
 	return isMatch;
   };
   
 
-const User = mongoose.model("user", userSchema);
+const User = mongoose.model("user", UserSchema);
 
 module.exports = User;

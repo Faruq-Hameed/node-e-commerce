@@ -8,8 +8,8 @@ const {
 const {
   signUpSchema,
   userPutMethodSchema,
-} = require("../../utils/input_schema");
-const { paginate, paginationError } = require("../../utils");
+} = require("../utils/input_schema");
+const { paginate, paginationError } = require("../utils");
 
 const router = express.Router();
 

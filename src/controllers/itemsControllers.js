@@ -1,8 +1,8 @@
 const express = require("express");
 const router = express.Router();
 const { Item, User } = require("../../database/models");
-const { itemSchema, itemUpdateSchema } = require("../../utils/input_schema");
-const { paginate, paginationError } = require("../../utils");
+const { itemSchema, itemUpdateSchema } = require("../utils/input_schema");
+const { paginate, paginationError } = require("../utils");
 
 router.get(
   "/",

@@ -3,8 +3,8 @@ const morgan = require("morgan");
 const helmet = require("helmet");
 const cors = require("cors");
 
-const { db_connection, URI } = require("./database");
-const { users, items, cart, payment, wallet } = require("./routes");
+const { db_connection } = require("./src/db");
+const router = require("./routes/userRouter");
 
 require("dotenv").config({ path: "./.env" });
 
@@ -12,13 +12,13 @@ const port = process.env.PORT || 3000;
 const app = express();
 
 db_connection()
-  .then((result) => {
-    console.log("connected to database successfully");
-  })
-  .catch((err) => {
-    console.log("error connecting to database:", err.message);
-    process.exit(1);
-  });
+//   .then((result) => {
+//     console.log("connected to database successfully");
+//   })
+//   .catch((err) => {
+//     console.log("error connecting to database:", err.message);
+//     process.exit(1);
+//   });
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -42,11 +42,11 @@ app.use(
     origin: ["https://www.section.io", "https://www.google.com/"]
   })
 );
-app.use("/api/users", users);
-app.use("/api/items", items);
-app.use("/api/cart", cart);
-app.use("/api/payments", payment);
-app.use("/api/wallet", wallet);
+app.use("/api/users", router);
+// app.use("/api/items", items);
+// app.use("/api/cart", cart);
+// app.use("/api/payments", payment);
+// app.use("/api/wallet", wallet);
 
 app.use("/static", express.static("./public")); //added virtual prefix('/static'. It is needed to get public files directly)
 

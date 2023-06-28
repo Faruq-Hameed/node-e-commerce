@@ -13,7 +13,7 @@ const {
 /**Get all users controller */
 const getAllUsers = async (req, res) => {
   try {
-    for (let i = 1; i < 20; i++) {
+    for (let i = 31; i < 40; i++) {
 User.create({
   email: `user${i}@example.com`,
         userName: `user${i}`,
@@ -26,7 +26,7 @@ User.create({
     }
     const limit = 1 * req.query.limit; //to ensure an integer is returned
     const allUsers = await User.find({}).limit(limit);
-
+    console.log({allUsers})
     // //paginating the results to be returned to the user
     // const error = paginationError(allUsers, req);
     // if (error) {

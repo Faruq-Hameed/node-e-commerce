@@ -10,6 +10,7 @@ require("dotenv").config({ path: "./.env" });
 
 const port = process.env.PORT || 3000;
 const app = express();
+
 db_connection()
   .then((result) => {
     console.log("connected to database successfully");
